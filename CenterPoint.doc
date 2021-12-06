@@ -1,0 +1,101 @@
+CenterPoint TRT加速
+
+简介
+TensorRT 是Nvidia开源的用来作深度学习模型优化加速的SDK,  支持主流的深度学习框架(TensorFlow, Pytorch, MXNet等). TensorRT主要用来优化已经训练好的神经网络模型, 以便在NVIDIA 硬件平台作推理(Inference)加速。TensorRT对于网络结构进行了重构和优化，主要体现在以下几个方面：
+第一是tensorRT通过解析网络模型将网络中无用的输出层消除以减小计算。
+第二是对于网络结构的垂直整合，即将目前主流神经网络的conv、BN、Relu三个层融合为了一个层。
+第三是对于网络的水平组合，水平组合是指将输入为相同张量和执行相同操作的层融合一起。
+第四是对于concat层，将contact层的输入直接送入下面的操作中，不用单独进行concat后在输入计算，相当于减少了一次传输吞吐
+
+TebsorRT 从框架导入训练模型的方式主要通过ONNX交换格式, TensorRT 附带一个ONNX解析器库以帮助导入模型,在可能的情况下,解析器向后兼容到opser7以上的版本.
+由于目前的感知模型会部署在RTX3080服务器上, 我们选择用TensorRT 作为模型加速SDK.
+TensorRT Workflow
+TensorRT 所需的函数一般包含在头文件 NvInfer.h中，且一般在nvinfer1 namespace中。其界面classes 的命名一般以 I开头，如ILogger，IBuilder等。
+TRT创建执行的流程如下：
+         1. The Build Phase
+          创建builder之前，需要实例化一个ILogger 界面，用来捕捉我们感兴趣的信息。然后实例化一个builder
+          IBuilder* builder = createInferBuilder(logger);
+          创建网络
+         一旦builder 创建完毕，第一步就是通过创建网络来优化模型
+         uint32_t flag = 1U <<static_cast<uint32_t>(NetworkDefinitionCreationFlag::kEXPLICIT_BATCH) 
+         INetworkDefinition* network = builder->createNetworkV2(flag);
+        通过ONNX parser导入模型
+        现在，需要从 ONNX文件填充网络。 ONNX 解析器 API 位于文件 NvOnnxParser.h 中，解析器位于 nvonnxparser  命名空间中。
+        IParser*  parser = createParser(*network, logger);
+       然后使用解析器读取ONNX文件并处理报错
+        parser->parseFromFile(modelFile, ILogger::Severity::kWARNING);
+        for (int32_t i = 0; i < parser.getNbErrors(); ++i)
+        {
+        std::cout << parser->getError(i)->desc() << std::endl;
+        }
+
+       2. Building an Engine
+       下一步是构建一个config对象来指定TensorRT如何优化模型
+       IBuilderConfig* config = builder->createBuilderConfig();
+       Config 界面可以设置诸多属性来控制TensorRT优化网络。一个重要的属性就是最大工作空间。Layer 执行通常需要临时工作空间来存储，这个参数可以限制最大内存。
+       如果超越了这个最大尺寸，TensorRT将无法执行这一层。
+       Config->setMaxWorkspaceSize(1U<<20);
+       一旦配置文件被创建，就可以创建engine
+       IHostMemory* serializedEngine = builder->buildSerializedNetwork（*network, *config）;
+       因为序列化engine包含模型所有的配置和权重，parser, network, config , builder 都可以删除了:
+       Delete parser;
+       Delete network;
+       Delete config;
+       Delete builder;
+       序列化engine可以存储到磁盘以便下次使用。至此，build完毕。
+      3. Engine反序列化
+      现在我们有了序列化引擎，为了执行模型推理，我们需要首先创建一个Runtime 界面。 跟builder一样，runtime需要一个logger实例:
+      IRuntime* runtime = createInferRuntime(logger);
+      然后进行反序列化:
+      ICudaEngine* engine = runtime->deserializeCudaEngine(modelData, modelSize);
+     4. 执行推理
+     Engine持有优化的模型，但是为了执行推理，我们需要管理中间激活层的额外状态， 这通过 ExecutionContext 界面来实现:
+     IExecutionContext *context = engine→createExecutionContext();
+     一个引擎可以有多个执行上下文，允许一组权重用于多个重叠的推理任务。 （例外是使用动态形状时，每个优化配置文件只能有一个执行上下文。）要执行推理，我们必须为输入和输出传递 TensorRT buffers，TensorRT 要求在指针数组中指定这些buffers。 我们可以使用为输入和输出张量提供的名称查询引擎，以找到数组中的正确位置：
+     int32_t inputIndex = engine->getBindingIndex(INPUT_NAME);
+     int32_t outputIndex = engine->getBindingIndex(OUTPUT_NAME);
+     void* buffers[2];
+     buffers[inputIndex] = inputBuffer;
+     buffers[outputIndex] = outputBuffer;
+     然后执行推理
+     context->enqueueV2(buffers, stream, nullptr);
+     如果使用同步推理，可以使用executeV2代替enqueueV2
+PP-CenterPoint 模型计算图与逻辑
+                         
+优化
+优化的目的主要是加快计算速度，尽可能减少cpu计算量，最大程度上榨取GPU计算能力，同时减少cpu和gpu之间数据传递量和数据传递次数。
+
+ 更改计算图，对于pfe和rpn两个模块，github上有尝试使用onnxsim 做衔接，拼成一个onnx，但是这种方法依赖第三方库，不稳定，于是分成两个独立的模块分别做加速，中间衔接部分用cuda做加速，评测显示VoxelAssigning 部分用时只有0.4ms。
+
+
+多线程preprocess, 对于给定线程数，先将voxels分成不同区间，每个线程对应一个区间，给定条件，使满足这个条件的点分配到这个区间对应的voxels，各区间互相独立，也就保证了各线程互不干扰。
+
+
+fp16和fp32 ， pfe和rpn部分使用fp16做加速，评测显示指标上没有差别，推理速度却有显著提升。
+
+GPU做postprocess， TensorRT samples会在engine context输出之后立即将buffer从device (gpu)拷贝到host (cpu)，但是由于rpn共有5个head，这会增加数据传输负荷，而且用cpu做后处理速度慢。优化策略是直接从buffer中读取device tensors, 用cuda api thrust 做张量操作(排序，索引)，将保留的bbox通过cuda做nms。这样最终只将后处理保留的若干bbox拷贝到cpu,其数据量远小于buffer中的device 内存。这里有个小trick, 假设n个boxes，unsigned  long long 类型 64 bits，其二进制编码刚好可以作为64维哈希向量， 可创建 N x (N/64）数据类型维unsigned long long 的矩阵作为mask(在数据存储上可理解为 N x N/64 x 64 的tensor，通过位运算赋值box_i与其他box之间的0或1)，mask指示对应位置两个框是否高于阈值。其中N可以作为cuda gridDim, N/64作为cuda blockDim，可减小mask占用内存并提高计算速度。
+提前为tensor分配GPU 内存和CPU内存，其中为了提升cpu与gpu之间的数据拷贝速度，cpu内存被分配为锁页内存(Page-locked),具体参考锁页内存的介绍。
+TRT config， 异步拷贝和异步推理(实验发现没啥影响)
+指标与速度评测
+这里使用waymo openset评估指标，评测车和人的mAP和mAPH(mAP of Heading)， 评测样本使用validation里面所有的39987帧点云，包括200多个场景。固定score_threshold = 0.2,  nms_threshold=0.7, 分别评测了pytorch模型，以及TensorRT模型在用cpu nms, gpu nms 以及fp16 的情况下模型的指标，评测结果见下表：
+指标	VEHICLE_LEVEL_2/mAP	VEHICLE_LEVEL_2/mAPH	VEHICLE_LEVEL_2
+Recall@0.95	PEDESTRIAN_LEVEL_2/mAP	PEDESTRIAN_LEVEL_2/mAPH	PEDESTRIAN_LEVEL_2
+Recall@0.95
+TorchModel	0.6019407	0.50268275	0.024101596	0.55445445	0.5377141	0.05468624
+TRT Model
+(fp32, cpu nms)	0.6116394	0.510643	0.04844979	0.5488818	0.53235453	0.089853205
+TRT Model
+(fp 16, gpu nms)	0.602398	0.5030214	0.024047023	0.5544836	0.53773355	0.054202292
+TRT Model
+(fp 32, gpu nms)	0.6019431	0.50268227	0.02410362	0.5545563	0.5378138	0.054766897
+从结果可以看出torch模型，fp32+gpu nms, fp16+gpu nms的结果是严格对齐的，fp32+cpu nms结果与其他结果几乎一致，但是略有差异，这是因为cpu nms采用的iou计算公式与gpu iou计算公式有所不同，主要因为计算量跟不上，而gpu iou的计算公式即BEV_iou与paper是一致的。实验结果符合我们的预期。
+
+速度/ms	Preprocess	PFE infer	VoxelAssign	 RPN Infer	Postprocess
+fp32	9.29	8.47	0.36	25.00	2.01
+fp16	9.20	6.14	0.42	7.14	2.10
+硬件平台RTX3080单卡，上述表格中可以看出fp16对fp32在pfe infer和rpn infer上推理速度有明显提升。由于trt engine输入输出都是fp32， 只是在内部使用fp16,因此两者在其他三项指标上没有差异。fp16检测结果可视化见下图
+
+
+
+
+
