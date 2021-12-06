@@ -1,5 +1,6 @@
 # An OD project implemented by TensorRT 
 
+![gif](/Users/imac/Downloads/vmware_shared/host_ws/projects/CenterPoint/docs/seq0_fp.gif)
 The project is a TensorRT version of CenterPoint, an 3D object detection model using center points in the bird eye view.
 Code is writen according to the [released paper](https://arxiv.org/abs/2006.11275)
 
@@ -14,7 +15,7 @@ cmake .. && make
 ./centerpoint
 ```
 
-To futher learn the detailed documentation, please refer to [wiki](doc)
+To futher learn the detailed documentation, please refer to the doc file.
 
 
 
