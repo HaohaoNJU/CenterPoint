@@ -1,10 +1,10 @@
 # An OD project implemented by TensorRT 
 
-![gif](doc/seq0_fp.gif)
 The project is a TensorRT version of CenterPoint, an 3D object detection model using center points in the bird eye view.
 Code is writen according to the [released paper](https://arxiv.org/abs/2006.11275)
 
 Besides, it is running inference on [WaymoOpenSet](https://waymo.com/intl/en_us/dataset-download-terms) 
+![gif](doc/seq0_fp.gif)
 
 You may firstly build the project by executing the following commands:
 
@@ -15,8 +15,8 @@ cmake .. && make
 ./centerpoint
 ```
 
-To futher learn the detailed documentation, please refer to the doc file.
-
+To futher learn the detailed documentation, please refer to the following computation graph and doc file.
+![graph](doc/computation_graph.png)
 
 
 # Reference
