@@ -20,7 +20,7 @@ To futher learn the detailed documentation, please refer to the following comput
 
 
 # Reference
-This project refers to the some of code from :
+This project refers to some of code from :
 
 [CenterPoint](https://github.com/tianweiy/CenterPoint)
 
