@@ -15,7 +15,7 @@ cmake .. && make
 ./centerpoint
 ```
 
-To futher learn the detailed documentation, please refer to the following computation graph and doc file.
+To futher learn the detailed documentation, please refer to the following computation graph and [doc file](doc/CenterPointTRT.doc).
 ![graph](doc/computation_graph.png)
 
 
