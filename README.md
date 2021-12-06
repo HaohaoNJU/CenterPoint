@@ -26,4 +26,4 @@ This project refers to some of code from :
 
 [TensorRT](https://github.com/NVIDIA/TensorRT/tree/master)
 
-[CenterPoint-PonintPillars ](https://github.com/CarkusL/CenterPoint)
+[CenterPoint-PointPillars ](https://github.com/CarkusL/CenterPoint)
