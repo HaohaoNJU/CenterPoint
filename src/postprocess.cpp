@@ -242,8 +242,8 @@ void postprocessGPU(const samplesCommon::BufferManager& buffers,
         int32_t* cls = static_cast<int32_t*>(buffers.getDeviceBuffer(rpnOutputTensorNames["clsName"][taskIdx]));
         
 
-        cudaStream_t stream;
-        GPU_CHECK(cudaStreamCreate(&stream));
+        // cudaStream_t stream;
+        // GPU_CHECK(cudaStreamCreate(&stream));
         int boxSize = findValidScoreNum( score, SCORE_THREAHOLD, OUTPUT_H , OUTPUT_W);
         std::cout << " Num boxes before " << boxSize <<"\n";
 
