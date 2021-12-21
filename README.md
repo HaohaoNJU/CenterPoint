@@ -4,7 +4,7 @@ The project is a TensorRT version of CenterPoint, an 3D object detection model u
 Code is writen according to the [released paper](https://arxiv.org/abs/2006.11275)
 
 Besides, it is running inference on [WaymoOpenSet](https://waymo.com/intl/en_us/dataset-download-terms) 
-![gif](doc/seq0_fp.gif)
+
 
 # Setup
 
@@ -39,6 +39,9 @@ the below table gives the average computation speed (by millisecond) of every co
 |Preprocess|PfeInfer|ScatterInfer|RpnInfer|Postprocess|
 |---|---|---|---|---|
 |1.61|5.88|0.17|6.89|2.37|
+
+Detection result show below:
+![gif](doc/seq0_fp.gif)
 
 # Acknowledgements
 This project refers to some of code from :
