@@ -27,7 +27,6 @@ cmake .. && make
 ```
 By default, the project load the serialized engine file to do inference, the engine files are created by the onnx files we provided and is set to float16.
 You can also build from onnx file by setting `params.load_engine = false` in samplecenterpoint.cpp and provide the onnx file path, in that way, you may control whether to use fp16 or fp32.
-# Project Status
 
 # What has been done?
 To futher learn the detailed documentation, please refer to the following computation graph and [doc file](doc/CenterPointTRT.doc).
