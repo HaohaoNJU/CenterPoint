@@ -11,9 +11,9 @@ Besides, it is running inference on [WaymoOpenSet](https://waymo.com/intl/en_us/
 The project has beed tested on *Ubuntu18.04* and *Ubuntu20.04*, 
 It mainly relys on TensorRT and cuda as 3rd-party package,  with the following versions respectively:
 
-*vTensorRT : 8.0.1.6
+*vTensorRT : 8.0.1.6*
 
-*vCuda : 11.3
+*vCuda : 11.3*
 
 Note that this project does not rely on *PCL* and *Boost* by now, however they may be used in the future and has been writen in CMakeLists.txt.
 
