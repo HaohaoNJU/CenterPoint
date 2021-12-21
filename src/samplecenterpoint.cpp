@@ -71,10 +71,11 @@ int main(int argc, char** argv)
     ///////////////////////////////////////////////////////////////PARAM INITIALIZATION///////////////////////////////////////////////////////////////
     Params params;
     // initialize sample parameters 
-    // params.pfeOnnxFilePath = "../../pfe_baseline32000.onnx";
-    // params.rpnOnnxFilePath = "../../rpn_baseline.onnx";
+    params.pfeOnnxFilePath = "/home/wanghao/Desktop/projects/notebooks/CP_ONNX_ENGINE/pfe_baseline32000.onnx";
+    params.rpnOnnxFilePath = "/home/wanghao/Desktop/projects/notebooks/CP_ONNX_ENGINE/rpn_baseline.onnx";
 
     params.pfeSerializedEnginePath = "../../pfe_baseline_fp16.engine";
+    // params.pfeSerializedEnginePath = "/home/wanghao/Desktop/projects/notebooks/CP_ONNX_ENGINE/pfe_baseline_fp32.engine";
     params.rpnSerializedEnginePath = "../../rpn_baseline_fp16.engine";
 
     // Input Output Names, according to TASK_NUM
@@ -88,15 +89,16 @@ int main(int argc, char** argv)
     params.rpnOutputTensorNames["dimName"] = {"264"};
     params.rpnOutputTensorNames["scoreName"] = {"265"};
     params.rpnOutputTensorNames["clsName"] = {"266"};
+
     // Input Output Paths
     // params.savePath = "/home/wanghao/Desktop/projects/CenterPoint/tensorrt/data/centerpoint_pp_baseline_score0.1_nms0.7_gpuint8/" ;
     params.savePath = "../../centerpoint_pp_baseline_score0.1_nms0.7/" ;
-    params.filePaths=glob("../../lidars/*bin");
-    // params.filePaths=glob("/mnt/data/waymo_opensets/val/points/seq_201_*");
+    params.filePaths=glob("../../lidars/*.bin");
+    // params.filePaths=glob("/mnt/data/waymo_opensets/val/points/seq_201_frame_*.bin");
 
     // Attrs
     params.dlaCore = -1;
-    params.fp16 = true;
+    params.fp16 = false;
     params.int8 = false;
     params.batch_size = 1;
     params.load_engine = true;

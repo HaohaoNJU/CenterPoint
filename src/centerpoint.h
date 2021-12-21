@@ -62,13 +62,44 @@ public:
         , mEngine(nullptr)
         ,mEngineRPN(nullptr)
     {
+
         //const int NUM_THREADS, const int MAX_NUM_PILLARS, const int GRID_X_SIZE, const int GRID_Y_SIZE):
         scatter_cuda_ptr_.reset(new ScatterCuda(PFE_OUTPUT_DIM, PFE_OUTPUT_DIM, BEV_W, BEV_H ));
         // mallocate a global memory for pointer
         // GPU_CHECK(cudaMalloc((void**)&dev_scattered_feature_,PFE_OUTPUT_DIM * BEV_H * BEV_W * sizeof(float)));
-        GPU_CHECK(cudaMalloc((void**)&dev_coors_,MAX_PILLARS * sizeof(int)));
-        GPU_CHECK(cudaMemset(dev_coors_,0,MAX_PILLARS * sizeof(int)));
 
+        GPU_CHECK(cudaMalloc((void**)&dev_points, MAX_POINTS * POINT_DIM * sizeof(float)));
+        GPU_CHECK(cudaMemset(dev_points,0, MAX_POINTS * POINT_DIM * sizeof(float)));
+
+        GPU_CHECK(cudaMalloc((void**)&deviceIndices,MAX_PILLARS * sizeof(int)));
+        GPU_CHECK(cudaMemset(deviceIndices,0,MAX_PILLARS * sizeof(int)));
+
+        /**
+         * @brief : Create and Init Variables for PreProcess
+         * 
+         */
+        GPU_CHECK(cudaMalloc((void**)& _PBEVIdxs, MAX_POINTS * sizeof(int)));
+        GPU_CHECK(cudaMalloc((void**)& _PPointNumAssigned, MAX_POINTS * sizeof(int)));
+        GPU_CHECK(cudaMalloc((void**)& _PMask, MAX_POINTS * sizeof(bool)));
+        GPU_CHECK(cudaMalloc((void**)& _BEVVoxelIdx, BEV_H * BEV_W * sizeof(int)));
+
+        GPU_CHECK(cudaMemset(_PBEVIdxs, 0, MAX_POINTS * sizeof(int)));
+        GPU_CHECK(cudaMemset(_PPointNumAssigned, 0, MAX_POINTS * sizeof(int)));
+        GPU_CHECK(cudaMemset(_PMask, 0, MAX_POINTS * sizeof(bool)));
+        GPU_CHECK(cudaMemset(_BEVVoxelIdx, 0, BEV_H * BEV_W * sizeof(int)));
+
+        GPU_CHECK(cudaMalloc((void**)&_VPointSum, MAX_PILLARS * 3 *sizeof(float)));
+        GPU_CHECK(cudaMalloc((void**)&_VRange, MAX_PILLARS * sizeof(int)));
+        GPU_CHECK(cudaMalloc((void**)&_VPointNum, MAX_PILLARS * sizeof(int)));
+
+
+        GPU_CHECK(cudaMemset(_VRange,0, MAX_PILLARS * sizeof(int)));
+        GPU_CHECK(cudaMemset(_VPointSum, 0, MAX_PILLARS * 3 * sizeof(float)));
+
+        /**
+         * @brief : Create and Init Variables for PostProcess
+         * 
+         */
         GPU_CHECK(cudaMalloc((void**)&dev_score_indexs_, OUTPUT_W * OUTPUT_H * sizeof(int)));
         GPU_CHECK(cudaMemset(dev_score_indexs_, -1 , OUTPUT_W * OUTPUT_H * sizeof(int)));
 
@@ -92,16 +123,27 @@ public:
 
         GPU_CHECK(cudaMallocHost((void**)&host_label_, OUTPUT_NMS_MAX_SIZE * sizeof(int)));
         GPU_CHECK(cudaMemset(host_label_, -1, OUTPUT_NMS_MAX_SIZE * sizeof(int)));
+
     }
 
     ~CenterPoint() {
     // Free host pointers
     // Free global pointers 
     std::cout << "Free Variables . \n";
-    GPU_CHECK(cudaFree(dev_coors_));
+    GPU_CHECK(cudaFree(deviceIndices));
+    GPU_CHECK(cudaFree(dev_points));
     GPU_CHECK(cudaFree(dev_score_indexs_));
     // GPU_CHECK(cudaFree(dev_scattered_feature_));
     // GPU_CHECK(cudaFree(dev_keep_data_));
+
+    GPU_CHECK(cudaFree( _PBEVIdxs)); 
+    GPU_CHECK(cudaFree( _PPointNumAssigned));
+    GPU_CHECK(cudaFree( _PMask));
+    GPU_CHECK(cudaFree( _BEVVoxelIdx)); // H * W
+    GPU_CHECK(cudaFree( _VPointSum));
+    GPU_CHECK(cudaFree( _VRange));
+    GPU_CHECK(cudaFree( _VPointNum));
+
 
     GPU_CHECK(cudaFreeHost(host_keep_data_));
     GPU_CHECK(cudaFreeHost(host_boxes_));
@@ -109,6 +151,7 @@ public:
     GPU_CHECK(cudaFreeHost(host_score_indexs_));
     GPU_CHECK(cudaFreeHost(remv_cpu));
     GPU_CHECK(cudaFreeHost(mask_cpu));
+
 
     // // Free engine 
     // std::cout << "Free PFE Engine  .\n";
@@ -125,13 +168,23 @@ public:
 
 
 private:
-    // global pointers 
+    // device pointers 
     float* dev_scattered_feature_;
-    int* dev_coors_;
+    float* dev_points ;
+    int* deviceIndices;
     int* dev_score_indexs_;
     long* dev_keep_data_;
     SampleUniquePtr<ScatterCuda> scatter_cuda_ptr_;
 
+    // device pointers for preprocess
+    int* _PBEVIdxs; 
+    int* _PPointNumAssigned;
+    bool* _PMask;
+    int* _BEVVoxelIdx; // H * W
+    float* _VPointSum;
+    int* _VRange;
+    int* _VPointNum;
+    
 
     // host  variables for post process
     long* host_keep_data_;

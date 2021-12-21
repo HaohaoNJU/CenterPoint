@@ -2,10 +2,14 @@
 #define __CENTERPOINT_PREPROCESS__
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include "config.h"
+#include "buffers.h"
+#include "common.h"
+#include "logger.h"
+#include "NvInfer.h"
 #include <cuda_runtime_api.h>
-
-
+using namespace std;
 #define GPU_CHECK(ans)                                                                                                                               \
   {                                                                                                                                                                                 \                                      
     GPUAssert((ans), __FILE__, __LINE__);                                                                                                 \
@@ -21,11 +25,24 @@ inline void GPUAssert(cudaError_t code, const char* file, int line, bool abort =
   }
 }
 
-void PreprocessGPU(float* points, float* feature, int* indices, int pointNum, int pillarNum, int featureNum );
 
-void preprocess(float* points, float* feature, int* indices, int pointNum, int featureNum);
 
-bool readBinFile(std::string& filename, void*& bufPtr, int& pointNum, int featureNum );
+
+
+// void _preprocess_gpu(float* points, float* feature, int* indices, int pointNum);
+// void preprocessGPU(float* points, float* feature, int* indices, int pointNum, int pointDim);
+void _preprocess_gpu(float* points, float* feature,int* indices,
+ bool* _PMask, int* _PBEVIdxs, int* _PPointNumAssigned, int* _BEVVoxelIdx, float* _VPointSum, int* _VRange, int* _VPointNum,
+int pointNum);
+
+void preprocessGPU(float* points, float* feature,int* indices,
+ bool* _PMask, int* _PBEVIdxs, int* _PPointNumAssigned, int* _BEVVoxelIdx, float* _VPointSum, int* _VRange, int* _VPointNum,
+int pointNum, int pointDim);
+
+
+void preprocess(float* points, float* feature, int* indices, int pointNum, int pointDim);
+
+bool readBinFile(std::string& filename, void*& bufPtr, int& pointNum, int pointDim );
 bool readTmpFile(std::string& filename, void*& bufPtr);
 
 template <typename T>

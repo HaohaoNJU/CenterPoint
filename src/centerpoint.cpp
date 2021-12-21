@@ -2,7 +2,6 @@
 #include "preprocess.h"
 
 
-
  void tmpSave(float* results , std::string outputFilePath, size_t size, size_t size1 ) {
     ofstream resultFile;
     resultFile.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
@@ -72,7 +71,6 @@ std::shared_ptr<nvinfer1::ICudaEngine> CenterPoint::buildFromSerializedEngine(st
          size = file.tellg();
          file.seekg(0,file.beg);
          trtModelStream_.resize(size);
-         std::cout << "vector size "<< trtModelStream_.size() << std::endl;
          file.read(trtModelStream_.data(), size);
          file.close() ;
      }
@@ -81,7 +79,6 @@ std::shared_ptr<nvinfer1::ICudaEngine> CenterPoint::buildFromSerializedEngine(st
         sample::gLogError<< " Failed to read serialized engine ! " << std::endl;
         return nullptr;
      }
-    std::cout << "model size " << size << std::endl;
     SampleUniquePtr<IRuntime> runtime{createInferRuntime(sample::gLogger.getTRTLogger())};
     if(!runtime) { sample::gLogError << "Failed to create runtime \n"; return nullptr;}
     sample::gLogInfo<<"Create ICudaEngine  !" << std::endl;
@@ -150,7 +147,7 @@ std::shared_ptr<nvinfer1::ICudaEngine>  CenterPoint::build(std::string  onnxFile
         return nullptr;
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////BUILD ENGINE FROM FILE//////////////////////////////////////////////////////////////////////////////
 
     // std::shared_ptr<nvinfer1::ICudaEngine> engine = std::shared_ptr<nvinfer1::ICudaEngine>(
     //     builder->buildEngineWithConfig(*network, *config), samplesCommon::InferDeleter());
@@ -163,7 +160,6 @@ std::shared_ptr<nvinfer1::ICudaEngine>  CenterPoint::build(std::string  onnxFile
     }
     config->setProfileStream(*profileStream);    
 
-    // steps that makes error !
     SampleUniquePtr<IHostMemory> plan{builder->buildSerializedNetwork(*network, *config)};
     if (!plan) {sample::gLogError << "Failed to create IHostMemory plan \n";return  nullptr;}
 
@@ -239,32 +235,28 @@ bool CenterPoint::constructNetwork(SampleUniquePtr<nvinfer1::IBuilder>& builder,
 bool CenterPoint::infer()
 {
     // Create RAII buffer manager object
-    std::cout << "before creating pfe context " << std::endl;
+    sample::gLogInfo << "Creating pfe context " << std::endl;
     samplesCommon::BufferManager buffers(mEngine);
     auto context = SampleUniquePtr<nvinfer1::IExecutionContext>(mEngine->createExecutionContext());
 
-    std::cout << "before creating rpn context " << std::endl;
+    sample::gLogInfo << "Creating rpn context " << std::endl;
     samplesCommon::BufferManager buffersRPN(mEngineRPN);
     auto contextRPN = SampleUniquePtr<nvinfer1::IExecutionContext>(mEngineRPN->createExecutionContext());
 
     if (!context || !contextRPN)
     {
-            std::cout << "Failed to create context " << std::endl;
+           sample::gLogError<< "Failed to create context " << std::endl;
         return false;
     }
 
     // mParams.inputTensorNames :  [ voxels,  num_voxels, coords ]
-    float* hostPillars = static_cast<float*>(buffers.getHostBuffer(mParams.pfeInputTensorNames[0]));
+    float* devicePillars = static_cast<float*>(buffers.getDeviceBuffer(mParams.pfeInputTensorNames[0]));
 
-    int hostIndex[MAX_PILLARS] = {-1};
-
-    // float* devPillars = static_cast<float*>(buffers.getDeviceBuffer(mParams.pfeInputTensorNames[0]));
-    // int *devIndex;
-    // GPU_CHECK(cudaMalloc((void**)& devIndex, MAX_PILLARS * sizeof(int)));
-    // GPU_CHECK(cudaMemset(devIndex, -1, MAX_PILLARS * sizeof(int)));
+    // int hostIndex[MAX_PILLARS] = {-1};
 
     int voxelNum = 0;
     void* inputPointBuf = nullptr;
+
 
 
     // create event  object , which are used time computing
@@ -309,25 +301,27 @@ bool CenterPoint::infer()
         std::vector<Box> predResult;
 
 
-
         cudaEventCreate(&start);
         cudaEventCreate(&stop);
         cudaEventRecord(start);
 
+
         //  Doing preprocess 
-        preprocess(points, hostPillars, hostIndex, pointNum,POINT_DIM);
-        // PreprocessGPU(points, devPillars, dev_coors_, pointNum, MAX_PILLARS, POINT_DIM );
+        // preprocess(points, hostPillars, hostIndex, pointNum,POINT_DIM);
+        GPU_CHECK(cudaMemcpy(dev_points, points, pointNum * POINT_DIM * sizeof(float), cudaMemcpyHostToDevice));
+        preprocessGPU(dev_points, devicePillars,deviceIndices, 
+        _PMask, _PBEVIdxs,  _PPointNumAssigned,  _BEVVoxelIdx, _VPointSum,  _VRange,  _VPointNum,
+         pointNum, POINT_DIM);
+
         
         // Memcpy from host input buffers to device input buffers
         // buffers.copyInputToDeviceAsync(stream);
-        buffers.copyInputToDevice();
+        // buffers.copyInputToDevice();
 
 
         cudaEventRecord(stop);
         cudaEventSynchronize(stop);
         cudaEventElapsedTime(&pre_time, start, stop);
-
-
 
         // Doing inference 
 
@@ -348,9 +342,8 @@ bool CenterPoint::infer()
         }
 
         // copy coordinates from host to device 
-        // GPU_CHECK(cudaMemcpyAsync(dev_coors_, hostIndex, MAX_PILLARS * sizeof(int), cudaMemcpyHostToDevice, stream));
-        GPU_CHECK(cudaMemcpy(dev_coors_, hostIndex, MAX_PILLARS * sizeof(int), cudaMemcpyHostToDevice));
-
+        // GPU_CHECK(cudaMemcpyAsync(deviceIndices, hostIndex, MAX_PILLARS * sizeof(int), cudaMemcpyHostToDevice, stream));
+        // GPU_CHECK(cudaMemcpy(deviceIndices, hostIndex, MAX_PILLARS * sizeof(int), cudaMemcpyHostToDevice));
 
         //  cast value type on the GPU device 
         dev_scattered_feature_ = static_cast<float*>(buffersRPN.getDeviceBuffer(mParams.rpnInputTensorNames[0]));
@@ -358,7 +351,7 @@ bool CenterPoint::infer()
         // reset scattered feature to zero . 
         GPU_CHECK(cudaMemset(dev_scattered_feature_, 0 ,  PFE_OUTPUT_DIM * BEV_W * BEV_H * sizeof(float)));
         
-        scatter_cuda_ptr_->doScatterCuda(MAX_PILLARS, dev_coors_,static_cast<float*>(buffers.getDeviceBuffer(mParams.pfeOutputTensorNames[0])), 
+        scatter_cuda_ptr_->doScatterCuda(MAX_PILLARS, deviceIndices,static_cast<float*>(buffers.getDeviceBuffer(mParams.pfeOutputTensorNames[0])), 
                                                                 //   static_cast<float*>(buffersRPN.getDeviceBuffer(mParamsRPN.inputTensorNames[0]) )) ;
                                                                 dev_scattered_feature_);
         cudaEventRecord(stop);
@@ -412,10 +405,10 @@ bool CenterPoint::infer()
         cudaStreamDestroy(stream);
     }
     sample::gLogInfo << "Average PreProcess Time: " << totalPreprocessDur / fileSize << " ms"<< std::endl;
-    sample::gLogInfo << "Average pfeInfer Time: " << totalPfeDur /fileSize << " ms"<< std::endl;
-    sample::gLogInfo << "Average scatterInfer Time: " << totalScatterDur /fileSize << " ms"<< std::endl;
-    sample::gLogInfo << "Average rpnInfer  Time: " << totalRpnDur /fileSize << " ms"<< std::endl;
-    sample::gLogInfo << "Average PostProcessDuration Time: " << totalPostprocessDur /  fileSize<< " ms"<< std::endl;
+    sample::gLogInfo << "Average PfeInfer Time: " << totalPfeDur /fileSize << " ms"<< std::endl;
+    sample::gLogInfo << "Average ScatterInfer Time: " << totalScatterDur /fileSize << " ms"<< std::endl;
+    sample::gLogInfo << "Average RpnInfer  Time: " << totalRpnDur /fileSize << " ms"<< std::endl;
+    sample::gLogInfo << "Average PostProcess Time: " << totalPostprocessDur /  fileSize<< " ms"<< std::endl;
 
     return true;
 }

@@ -15,7 +15,7 @@
 
 
 // feature : voxels,  indices : coords 
-void PreprocessWorker(float* points, float* feature, int* indices, int pointNum, int threadIdx, int pillarsPerThread, int featureNum ){
+void PreprocessWorker(float* points, float* feature, int* indices, int pointNum, int threadIdx, int pillarsPerThread, int pointDim ){
     // 0 ~ MAX_PIONT_IN_PILLARS
 
     unsigned short pointCount[MAX_PILLARS] = {0};
@@ -26,9 +26,9 @@ void PreprocessWorker(float* points, float* feature, int* indices, int pointNum,
 
     int pillarCount = threadIdx*pillarsPerThread;
     for(int idx = 0; idx < pointNum; idx++){
-        float x = points[idx*featureNum];
-        float y = points[idx*featureNum+1];
-        float z = points[idx*featureNum+2];
+        float x = points[idx*pointDim];
+        float y = points[idx*pointDim+1];
+        float z = points[idx*pointDim+2];
 
  
         if(pillarCount> MAX_PILLARS - 1)
@@ -69,8 +69,8 @@ void PreprocessWorker(float* points, float* feature, int* indices, int pointNum,
         feature[     pillarCountIdx*MAX_PIONT_IN_PILLARS * FEATURE_NUM+ pointNumInPillar* FEATURE_NUM] = x;
         feature[1 +  pillarCountIdx*MAX_PIONT_IN_PILLARS * FEATURE_NUM+ pointNumInPillar* FEATURE_NUM] = y;
         feature[2 +  pillarCountIdx*MAX_PIONT_IN_PILLARS * FEATURE_NUM+ pointNumInPillar* FEATURE_NUM] = z; // z
-        feature[3 +  pillarCountIdx*MAX_PIONT_IN_PILLARS * FEATURE_NUM+ pointNumInPillar* FEATURE_NUM] = points[idx*featureNum+3]; // instence
-        feature[4 +  pillarCountIdx*MAX_PIONT_IN_PILLARS * FEATURE_NUM+ pointNumInPillar* FEATURE_NUM] = points[idx*featureNum+4]; // time_lag
+        feature[3 +  pillarCountIdx*MAX_PIONT_IN_PILLARS * FEATURE_NUM+ pointNumInPillar* FEATURE_NUM] = points[idx*pointDim+3]; // instence
+        feature[4 +  pillarCountIdx*MAX_PIONT_IN_PILLARS * FEATURE_NUM+ pointNumInPillar* FEATURE_NUM] = points[idx*pointDim+4]; // time_lag
         feature[8 +  pillarCountIdx*MAX_PIONT_IN_PILLARS * FEATURE_NUM+ pointNumInPillar* FEATURE_NUM] = x - (xIdx*X_STEP + X_MIN + X_STEP/2); //  x residual to geometric center
         feature[9 +  pillarCountIdx*MAX_PIONT_IN_PILLARS * FEATURE_NUM+ pointNumInPillar* FEATURE_NUM] = y - (yIdx*Y_STEP + Y_MIN + Y_STEP/2); //  y residual to geometric center
 
@@ -119,7 +119,7 @@ void PreprocessWorker(float* points, float* feature, int* indices, int pointNum,
 }
 
 
-void preprocess(float* points, float* feature, int* indices, int pointNum, int featureNum =5)
+void preprocess(float* points, float* feature, int* indices, int pointNum, int pointDim =5)
 {
 
     if (MAX_PILLARS%THREAD_NUM) {
@@ -148,7 +148,7 @@ void preprocess(float* points, float* feature, int* indices, int pointNum, int f
                                              pointNum,
                                              idx,
                                              MAX_PILLARS/THREAD_NUM,
-                                             featureNum
+                                             pointDim
                                              );
         
         threadPool.push_back(std::move(worker));
@@ -166,8 +166,23 @@ void preprocess(float* points, float* feature, int* indices, int pointNum, int f
 }
 
 
+// void preprocessGPU(float* points, float* feature, int* indices, int pointNum, int pointDim =5)
+void preprocessGPU(float* dev_points, float* feature,int* indices,
+ bool* _PMask, int* _PBEVIdxs, int* _PPointNumAssigned, int* _BEVVoxelIdx, float* _VPointSum, int* _VRange, int* _VPointNum,
+int pointNum, int pointDim = 5)
+{
+    pointNum = pointNum > MAX_POINTS ? MAX_POINTS : pointNum;
+    
+    GPU_CHECK(cudaMemset(feature, 0.0, MAX_PILLARS * MAX_PIONT_IN_PILLARS * FEATURE_NUM * sizeof(float)));
 
-bool readBinFile(std::string& filename, void*& bufPtr, int& pointNum, int featureNum)
+    _preprocess_gpu( dev_points, feature, indices, 
+    _PMask, _PBEVIdxs,  _PPointNumAssigned,  _BEVVoxelIdx, _VPointSum,  _VRange,  _VPointNum,
+     pointNum);
+
+}
+
+
+bool readBinFile(std::string& filename, void*& bufPtr, int& pointNum, int pointDim)
 {
     // open the file:
     std::streampos fileSize;
@@ -191,93 +206,10 @@ bool readBinFile(std::string& filename, void*& bufPtr, int& pointNum, int featur
     file.read((char*) bufPtr, fileSize);
     file.close();
     
-    pointNum = fileSize /sizeof(float) / featureNum;
-    if( fileSize /sizeof(float) % featureNum != 0){
+    pointNum = fileSize /sizeof(float) / pointDim;
+    if( fileSize /sizeof(float) % pointDim != 0){
          sample::gLogError << "[Error] File Size Error! " << fileSize << std::endl;
     }
     sample::gLogInfo << "[INFO] pointNum : " << pointNum << std::endl;
-    return true;
-}
-
-// bool readBinFile_(std::string& filename, void*& bufPtr, int& pointNum,  int featureNum = 5, vector<float> points) {
-
-// 	fstream input(filename.c_str(), ios::in | ios::binary);
-// 	if(!input.good()){
-// 		cerr << "Could not read file: " << infile << endl;
-// 		exit(EXIT_FAILURE);
-// 	}
-// 	input.seekg(0, ios::beg);
- 
- 
-// 	int i;
-// 	for (i=0; input.good() && !input.eof(); i++) {
-// 	    float[featureNum] point = {0};
-// 		input.read((char *) point, featureNum*sizeof(float));
-// 		points->push_back(point);
-// 	}
-// 	input.close();
-
-// }
-
-// bool readBinFile(std::string& filename, void*& bufPtr, int& pointNum,  int featureNum = 5)
-// {
-//     // open the file:
-//     std::streampos fileSize;
-//     std::ifstream file(filename, std::ios::binary);
-    
-//     if (!file) {
-//         sample::gLogError << "[Error] Open file " << filename << " failed" << std::endl;
-//         return false;
-//     }
-//     // get its size:
-//     file.seekg(0, std::ios::end);
-//     fileSize = file.tellg();
-//     file.seekg(0, std::ios::beg);
-    
-//     bufPtr = malloc(fileSize);
-//     if(bufPtr == nullptr){
-//         sample::gLogError << "[Error] Malloc Memory Failed! Size: " << fileSize << std::endl;
-//         return false;
-//     }
-//     // read the data:
-//     file.read((char*) bufPtr, fileSize);
-//     file.close();
-    
-//     // constexpr int featureNum = 5;
-//     pointNum = fileSize /sizeof(float) / featureNum;
-//     if( fileSize /sizeof(float) % featureNum != 0){
-//          sample::gLogError << "[Error] File Size Error! " << fileSize << std::endl;
-//     }
-//     sample::gLogInfo << "[INFO] pointNum : " << pointNum << std::endl;
-//     return true;
-// }
-
-bool readTmpFile(std::string& filename, void*& bufPtr)
-{
-    // open the file:
-    std::streampos fileSize;
-    std::ifstream file(filename, std::ios::binary);
-    
-    if (!file) {
-        sample::gLogError << "[Error] Open file " << filename << " failed" << std::endl;
-        return false;
-    }
-    // get its size:
-    file.seekg(0, std::ios::end);
-    fileSize = file.tellg();
-    file.seekg(0, std::ios::beg);
-    
-    bufPtr = malloc(fileSize);
-    if(bufPtr == nullptr){
-        sample::gLogError << "[Error] Malloc Memory Failed! Size: " << fileSize << std::endl;
-        return false;
-    }
-    // read the data:
-    file.read((char*) bufPtr, fileSize);
-    file.close();
-    
-    // constexpr int featureNum = 5;
-    int pointNum = fileSize /sizeof(float) ;
-    sample::gLogInfo << "[INFO] pointNum : " << pointNum << ", Malloc Memory Size: "<<fileSize<<std::endl;
     return true;
 }
