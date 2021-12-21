@@ -1,4 +1,4 @@
-# An OD project implemented by TensorRT 
+# An Lidar Object Detection project implemented by TensorRT 
 
 The project is a TensorRT version of CenterPoint, an 3D object detection model using center points in the bird eye view.
 Code is writen according to the [released paper](https://arxiv.org/abs/2006.11275)
@@ -6,7 +6,16 @@ Code is writen according to the [released paper](https://arxiv.org/abs/2006.1127
 Besides, it is running inference on [WaymoOpenSet](https://waymo.com/intl/en_us/dataset-download-terms) 
 ![gif](doc/seq0_fp.gif)
 
-You may firstly build the project by executing the following commands:
+# Setup
+
+The project has beed tested on *Ubuntu18.04* and *Ubuntu20.04*, 
+It mainly relys on TensorRT and cuda as 3rd-party package,  with the following versions respectively:
+*vTensorRT : 8.0.1.6
+*vCuda : 11.3
+
+Note that this project does not rely on *PCL* and *Boost* by now, however they may be used in the future and has been writen in CMakeLists.txt.
+
+After installation, you may then build the project by executing the following commands:
 
 ```
 cd /YOUR/PATH/TO/centerpoint/src
@@ -14,12 +23,15 @@ mkdir build && cd build
 cmake .. && make
 ./centerpoint
 ```
-
+# What has been done?
 To futher learn the detailed documentation, please refer to the following computation graph and [doc file](doc/CenterPointTRT.doc).
 ![graph](doc/computation_graph.png)
 
+# Computation Speed 
+|Preprocess|PfeInfer|ScatterInfer|RpnInfer|Postprocess|
+|1.61|5.88|0.17|6.89|2.37|
 
-# Reference
+# Acknowledgements
 This project refers to some of code from :
 
 [CenterPoint](https://github.com/tianweiy/CenterPoint)
