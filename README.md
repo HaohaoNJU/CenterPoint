@@ -40,7 +40,7 @@ the below table gives the average computation speed (by millisecond) of every co
 |---|---|---|---|---|
 |1.61|5.88|0.17|6.89|2.37|
 
-Detection result show below:
+Detection result shows below:
 ![gif](doc/seq0_fp.gif)
 
 # Acknowledgements
