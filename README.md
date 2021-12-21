@@ -23,13 +23,20 @@ mkdir build && cd build
 cmake .. && make
 ./centerpoint
 ```
+By default, the project load the serialized engine file to do inference, the engine files are created by the onnx files we provided and is set to float16.
+You can also build from onnx file by setting `params.load_engine = false` in samplecenterpoint.cpp and provide the onnx file path, in that way, you may control whether to use fp16 or fp32.
+# Project Status
+
 # What has been done?
 To futher learn the detailed documentation, please refer to the following computation graph and [doc file](doc/CenterPointTRT.doc).
 ![graph](doc/computation_graph.png)
 
 # Computation Speed 
-|Preprocess|PfeInfer|ScatterInfer|RpnInfer|Postprocess|
+Acceleration is the main aim we want to archieve, therefore we do most of computation(including preprocess & postprocess) on GPU, 
+the below table gives the average computation speed (by millisecond) of every computation module, it is tested on RTX3080, with all the 39987 waymo validation samples. As illustrated above, the engine is set to float16, and eveluation metric shows no difference on fp32 or fp16.
 
+|Preprocess|PfeInfer|ScatterInfer|RpnInfer|Postprocess|
+|---|---|---|---|---|
 |1.61|5.88|0.17|6.89|2.37|
 
 # Acknowledgements
