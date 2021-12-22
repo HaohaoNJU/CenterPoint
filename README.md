@@ -20,7 +20,8 @@ Note that this project does not rely on *PCL* and *Boost* by now, however they m
 After installation, you may then build the project by executing the following commands:
 
 ```
-cd /YOUR/PATH/TO/centerpoint/src
+cd /YOUR/PATH/TO/centerpoint
+mkdir centerpoint_pp_baseline_score0.1_nms0.7 && cd src
 mkdir build && cd build
 cmake .. && make
 ./centerpoint
