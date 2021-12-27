@@ -1,7 +1,7 @@
 # An Lidar Object Detection project implemented by TensorRT 
 
 The project is a TensorRT version of CenterPoint, an 3D object detection model using center points in the bird eye view.
-Code is writen according to the [released paper](https://arxiv.org/abs/2006.11275)
+Code is writen according to the [project](https://github.com/tianweiy/CenterPoint.git)
 
 Besides, it is running inference on [WaymoOpenSet](https://waymo.com/intl/en_us/dataset-download-terms) 
 
