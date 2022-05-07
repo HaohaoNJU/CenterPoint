@@ -158,6 +158,8 @@ gpu_device = torch.device("cuda")
 
 with torch.no_grad():
     for batch_idx, data_batch in tqdm(enumerate(data_loader)):
+        if batch_idx > 1000:
+            break
         example = example_to_device(data_batch, gpu_device, non_blocking=False)
         token = example['metadata'][0]['token']
         voxels = example["voxels"]
