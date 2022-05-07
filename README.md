@@ -80,36 +80,79 @@ python3 create_engine.py \
 --calib_batch_size 10
 ```
 
-###  Run inference 
+#  Run inference 
 
-## 4. Online Tracking and Visualization
-
-After installation, you may then build the project by executing the following commands:
+After preperation, you may then build the project by executing the following commands:
 
 ```
-cd /YOUR/PATH/TO/centerpoint
-mkdir centerpoint_pp_baseline_score0.1_nms0.7 && cd src
+cd /PATH/TO/centerpoint
 mkdir build && cd build
 cmake .. && make
-./centerpoint
 ```
-By default, the project loads the serialized engine files to do inference, and the engine files are created by the onnx files we provided and are set as float16.
-You can also build from onnx files by setting `params.load_engine = false` in samplecenterpoint.cpp and provide the onnx file path. In that way, you may decide whether to use fp16 or fp32.
+If you want to create engine from onnx files, you can do infer by
+```
+./build/centerpoint \
+--pfeOnnxPath=models/pfe_baseline32000.onnx \
+--rpnOnnxPath=models/rpn_baseline.onnx \
+--savePath=results \
+--filePath=/PATH/TO/DATA \
+--fp16
+```
+Or load engine files directly 
+```
+./build/centerpoint \
+--pfeEnginePath=pfe_fp.engine \
+--rpnEnginePath=rpn_fp.engine \
+--savePath=results \
+--filePath=/PATH/TO/DATA \
+--loadEngine
+```
+
+
+
+
+# Computation Speed 
+Acceleration is the main aim we want to archieve, and therefore we do most of computation(including preprocess & postprocess) on GPU. 
+The below table gives the average computation speed (by millisecond) of every computation module, and it is tested on RTX3080, with all the 39987 waymo validation samples. 
+the below table summarizes the computation speed.
+||Preprocess|PfeInfer|VoxelAssign|RpnInfer|Postprocess|
+|---|---|---|---|---|---|
+|fp32+gpupre+gpupost|1.73|8.47|0.36|25.0|2.01|
+|fp16+gpupre+gpupost|1.61|5.88|0.17|6.89|2.37|
+|fp16+cpupre+gpupost|9.2|6.14|0.42|7.14|2.10|
+|int8(minmax)+gpupre+gpupost|1.61|8.23|0.17|5.25|3.21|
+|int8(entropy)+gpupre+gpupost|1.41|7.45|0.17|4.65|2.11|
+|int8(explicit)+gpupre+gpupost|2.2|8.0|0.17|8.18|2.59|
+
+Note that `fp16` or `int8` may be mixed with `fp32`, we have no control over which tensor shall be int8 or fp32. 
+We can see that fp16 mode runs much faster than fp32 mode, and gpu preprocess runs much faster than that of cpu, because in cuda, we runs in a pointwise-multithread-way, while in cpu, points are preprocessed in a for-loop-manner. 
+
+# Metrics
+You can run `cd tools && python3 waymo_eval.py --cpp_output --save_path ../results ` to compute evaluation metrics, we set score threshould as 0.2, iou threshuold as 0.7, below we can see the evaluation results:
+||Vehicle_level2/mAP|Vehichle_level2/mAPH|vehicle_level2 Recall@0.95|Pedestrian_level2/mAP|Pedestrian_level2/mAPH|Pedestrian_level2 Recall@0.95|
+|---|---|---|---|---|---|---|
+|torchModel|0.6019|0.5027|0.0241|0.5545|0.5377|0.0547|
+|fp32+cpupre+gpupost|0.6019|0.5027|0.0241|0.5546|0.5378|0.0548|
+|fp16+cpupre+gpupost|0.6024|0.5030|0.0240|0.5545|0.5378|0.0542|
+|fp16+gpupre+gpupost|0.6207|0.5173|0.2327|0.5788|0.5624|0.2984|
+|int8(minmax)+gpupre+gpupost|0.3470|0.2889|0.0|0.3222|0.3065|0.0|
+|int8(entropy)+gpupre+gpupost|0.1263|0.1015|0.0|0.1129|0.106|0.0|
+|int8(explicit)+gpupre+gpupost|0.4642|0.3823|0.0288|0.4248|0.4112|0.0201|
+
+From the above metrics, we can see that 
+1. fp16 model almostly performs as well as fp32 model, despite it runs much faster.
+2. float model+cpupre+gpupost achieves the same result as original torch model, because the way they preprocess points are same, while gpu preprocess performs better. Because points in multithread are orderless, for a voxel that contains more points than given threshould, it makes unbiased subsampling.[detailed reason see here](https://github.com/tianweiy/CenterPoint/issues/243)
+3. int8 mode can't achieve the same results as float mode, and implicit calibration performs worse than explicit calib, we choose 1000 samples to make calibration and batch size is set 10, maybe samples are insufficient. However explicit calib model runs slower than implicit ones.
+
+# Online Tracking and Visualization
+TODO 
+
+Detection result shows below:
+![gif](doc/seq0_fp.gif)
 
 # What has been done?
 To futher learn the detailed documentation, please refer to the following computation graph and [doc file](doc/CenterPointTRT.doc).
 ![graph](doc/computation_graph.png)
-
-# Computation Speed 
-Acceleration is the main aim we want to archieve, and therefore we do most of computation(including preprocess & postprocess) on GPU. 
-The below table gives the average computation speed (by millisecond) of every computation module, and it is tested on RTX3080, with all the 39987 waymo validation samples. As illustrated above, the engine is set to float16, and eveluation metric shows no difference on fp32 or fp16.
-
-|Preprocess|PfeInfer|ScatterInfer|RpnInfer|Postprocess|
-|---|---|---|---|---|
-|1.61|5.88|0.17|6.89|2.37|
-
-Detection result shows below:
-![gif](doc/seq0_fp.gif)
 
 # Acknowledgements
 This project refers to some codes from:
