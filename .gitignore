@@ -1,8 +1,8 @@
 build
 tools/__pycache__
 tools/tmp_models
-tools/news
-tools/olds
+news
+olds
 results/*
 run0.sh
 
