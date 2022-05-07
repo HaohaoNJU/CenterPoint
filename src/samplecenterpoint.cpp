@@ -14,15 +14,6 @@
  * limitations under the License.
  */
 
-//!
-//! sampleOnnxMNIST.cpp
-//! This file contains the implementation of the ONNX MNIST sample. It creates the network using
-//! the MNIST onnx model.
-//! It can be run with the following command line:
-//! Command: ./sample_onnx_mnist [-h or --help] [-d=/path/to/data/dir or --datadir=/path/to/data/dir]
-//! [--useDLACore=<int>]
-//!
-
 #include "argsParser.h"
 #include "buffers.h"
 #include "common.h"
@@ -46,9 +37,41 @@
 
 const std::string gSampleName = "TensorRT.sample_onnx_centerpoint";
 
+//!
+//! \brief Prints the help information for running this sample
+//!
+void printHelpInfo()
+{
+    std::cout
+        << "Usage: ./centerpoint [-h or --help]"
+        << std::endl;
+    std::cout << "--help          Display help information" << std::endl;
+    std::cout << "--filePath       Specify path to a data directory. "
+              << std::endl;
+    std::cout << "--savePath       Specify path to a directory you want save detection results."
+              << std::endl;
 
+    std::cout << "--loadEngine       Load from serialized engine files or from onnx files, provide this argument only when you want to create "
+    "engine from serialized engine files you previously generated(and provide paths to engine files), or you will need to provide paths to onnx files. "
+              << std::endl;   
 
+    std::cout << "--pfeOnnxPath       Specify path to pfe onnx model. This option can be used when you want to create engine from onnx file. "
+              << std::endl;
+    std::cout << "--rpnOnnxPath       Specify path to rpn onnx model. This option can be used when you want to create engine from onnx file. "
+              << std::endl;      
+    std::cout << "--pfeEnginePath       Specify path to pfe engine model. This option can be used when you want to create engine from serialized engine file you previously generated. "
+              << std::endl;
+    std::cout << "--rpnEnginePath       Specify path to rpn engine model. This option can be used when you want to create engine from serialized engine file you previously generated.  "
+              << std::endl;   
 
+    std::cout << "--fp16       Provide this argument only when you want  to do inference on fp16 mode, note that this config is only valid when you create engine from onnx files. "
+              << std::endl;   
+
+    std::cout << "--useDLACore=N  Specify a DLA engine for layers that support DLA. Value can range from 0 to n-1, "
+                 "where n is the number of DLA engines on the platform, by default it's set -1."
+              << std::endl;
+    
+}
 
 int main(int argc, char** argv)
 {
@@ -57,10 +80,12 @@ int main(int argc, char** argv)
     if (!argsOK)
     {
         sample::gLogError << "Invalid arguments" << std::endl;
+        printHelpInfo();
         return EXIT_FAILURE;
     }
     if (args.help)
     {
+        printHelpInfo();
         return EXIT_SUCCESS;
     }
     auto sampleTest = sample::gLogger.defineTest(gSampleName, argc, argv);
@@ -71,12 +96,14 @@ int main(int argc, char** argv)
     ///////////////////////////////////////////////////////////////PARAM INITIALIZATION///////////////////////////////////////////////////////////////
     Params params;
     // initialize sample parameters 
-    params.pfeOnnxFilePath = "/home/wanghao/Desktop/projects/notebooks/CP_ONNX_ENGINE/pfe_baseline32000.onnx";
-    params.rpnOnnxFilePath = "/home/wanghao/Desktop/projects/notebooks/CP_ONNX_ENGINE/rpn_baseline.onnx";
-
-    params.pfeSerializedEnginePath = "../../pfe_baseline_fp16.engine";
-    // params.pfeSerializedEnginePath = "/home/wanghao/Desktop/projects/notebooks/CP_ONNX_ENGINE/pfe_baseline_fp32.engine";
-    params.rpnSerializedEnginePath = "../../rpn_baseline_fp16.engine";
+    params.pfeOnnxFilePath =  args.pfeOnnxPath;
+    params.rpnOnnxFilePath =  args.rpnOnnxPath;
+    params.pfeSerializedEnginePath = args.pfeEnginePath;
+    params.rpnSerializedEnginePath = args.rpnEnginePath;
+    params.savePath = args.savePath;
+    params.filePaths=glob(args.filePath + "/seq_*.bin");
+    params.fp16 = args.runInFp16;
+    params.load_engine = args.loadEngine;
 
     // Input Output Names, according to TASK_NUM
     params.pfeInputTensorNames.push_back("input.1");
@@ -90,20 +117,11 @@ int main(int argc, char** argv)
     params.rpnOutputTensorNames["scoreName"] = {"265"};
     params.rpnOutputTensorNames["clsName"] = {"266"};
 
-    // Input Output Paths
-    // params.savePath = "/home/wanghao/Desktop/projects/CenterPoint/tensorrt/data/centerpoint_pp_baseline_score0.1_nms0.7_gpuint8/" ;
-    params.savePath = "../../centerpoint_pp_baseline_score0.1_nms0.7/" ;
-    params.filePaths=glob("../../lidars/*.bin");
-    // params.filePaths=glob("/mnt/data/waymo_opensets/val/points/seq_201_frame_*.bin");
 
     // Attrs
-    params.dlaCore = -1;
-    params.fp16 = false;
-    params.int8 = false;
+    params.dlaCore = args.useDLACore;
     params.batch_size = 1;
-    params.load_engine = true;
-    // build int8 engine from file . 
-    // params.load_engine +=  params.int8;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // std::string savePath = "/home/wanghao/Desktop/projects/notebooks/centerpoint_output_cpp" ;
@@ -111,7 +129,7 @@ int main(int argc, char** argv)
     sample::gLogInfo << "Building and running a GPU inference engine for CenterPoint" << std::endl;
     if (!sample.engineInitlization())
     {
-        std::cout << "sample build error  " << std::endl;
+        sample::gLogInfo << "sample build error  " << std::endl;
         return sample::gLogger.reportFail(sampleTest);
     }
     

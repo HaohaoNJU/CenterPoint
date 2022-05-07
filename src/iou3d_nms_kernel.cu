@@ -459,7 +459,7 @@ __global__   void boxAssignKernel(float* reg, float* height , float* dim, float*
         else if(channel == 8)
                 out_label[boxId] = label[idx];
 }
-void boxAssignLauncher(float* reg, float* height , float* dim, float*rot, float* boxes, float*score, int* label,  float* out_score, int*out_label,
+void _box_assign_launcher(float* reg, float* height , float* dim, float*rot, float* boxes, float*score, int* label,  float* out_score, int*out_label,
 int* validIndexs ,int boxSize,  int output_h, int output_w) {
                                                         boxAssignKernel<<< boxSize, 9 >>> (reg, height , dim ,rot, boxes, score, label,  out_score, out_label, validIndexs, output_h, output_w);
                                                         }
@@ -471,7 +471,7 @@ __global__ void indexAssign(int* indexs) {
     indexs[idx] = idx;
 }
 
-void indexAssignLauncher(int* indexs, int output_h, int output_w) {
+void _index_assign_launcher(int* indexs, int output_h, int output_w) {
     indexAssign<<<output_h, output_w>>>(indexs);
 }
 
@@ -495,7 +495,7 @@ struct is_odd
 
 
 
-__global__ void findValidScoreNumKernel_(float* score, float* thre, float* N) 
+__global__ void _find_valid_score_numKernel_(float* score, float* thre, float* N) 
 {
     int yIdx = blockIdx.x;
     int xIdx = threadIdx.x;
@@ -504,36 +504,17 @@ __global__ void findValidScoreNumKernel_(float* score, float* thre, float* N)
      atomicAdd(N, 1.0);
 }
 
-int findValidScoreNum(float* score, float thre, int output_h, int output_w) 
+int _find_valid_score_num(float* score, float thre, int output_h, int output_w) 
 {
     // thrust::device_vector<float> score_vec(score,score + output_h * output_w);
     return thrust::count_if(thrust::device, score, score + output_h * output_w,  is_greater(thre));
     // return thrust::count_if(thrust::device, score_vec.begin(),score_vec.end(),is_greater(thre));
 }
 
-// int findValidScoreNum(float* score, float thre, int output_h, int output_w ) { //,  thrust::host_vector<int> host_box_size) {
-//     float box_size[1];
-//     float *box_size_;
-//     float* thre_;
-//     cudaMalloc((void**)&box_size_, 2*sizeof(float));
-//     cudaMemset(box_size_,0,sizeof(float));
-//     cudaMemset(box_size_+1,1,sizeof(float));
-//     cudaMalloc((void**)&thre_, sizeof(float));
-//     cudaMemset(thre_,0.1,sizeof(float));
-//     std::cout <<"using atomic add \n";
-//     findValidScoreNumKernel_<<<output_h,output_w >>>(score, thre_, box_size_);
-//     cudaMemcpy(box_size, box_size_, sizeof(float), cudaMemcpyDeviceToHost);
-//     std::cout << "valid score num " << box_size[0] << std::endl;
-//     cudaFree(box_size_);
-//     cudaFree(thre_);
-//     return 194;
-//     // thrust::device_vector<int> box_size_vec(box_size, box_size + 1);
-//     // thrust::copy(box_size_vec.begin(), box_size_vec.end(),host_box_size.begin());
-// }
 
 
 
-void sort_by_key(float* keys, int* values,int size) {
+void _sort_by_key(float* keys, int* values,int size) {
 
         thrust::sequence(thrust::device, values, values+size);
         // size = OUTPUT_H * OUTPUT_W;
@@ -542,7 +523,7 @@ void sort_by_key(float* keys, int* values,int size) {
 }
 
 
-void gather_all(float* host_boxes, int* host_label, 
+void _gather_all(float* host_boxes, int* host_label, 
                                 float* reg, float* height, float* dim, float* rot,  float* sorted_score, int32_t* label,  
                                 int* dev_indexs, long* host_keep_indexs,  int boxSizeBef, int boxSizeAft) 
 {
@@ -699,7 +680,7 @@ void rawNmsLauncher(const float *reg, const float* height, const float* dim, con
 }
 
 
-int rawNmsGpu(const float* reg,  const float* height, const float* dim , const float* rot,
+int _raw_nms_gpu(const float* reg,  const float* height, const float* dim , const float* rot,
                                      const int* indexs, long* host_keep_data,unsigned long long* mask_cpu, unsigned long long* remv_cpu,
                                       int boxes_num,  float nms_overlap_thresh){
     // params boxes: (N, 7) [x, y, z, dx, dy, dz, heading]

@@ -1,0 +1,7 @@
+setup.py
+masked_conv.egg-info/PKG-INFO
+masked_conv.egg-info/SOURCES.txt
+masked_conv.egg-info/dependency_links.txt
+masked_conv.egg-info/top_level.txt
+src/deform_conv_cuda.cpp
+src/deform_conv_cuda_kernel.cu

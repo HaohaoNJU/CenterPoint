@@ -244,15 +244,15 @@ void postprocessGPU(const samplesCommon::BufferManager& buffers,
 
         // cudaStream_t stream;
         // GPU_CHECK(cudaStreamCreate(&stream));
-        int boxSize = findValidScoreNum( score, SCORE_THREAHOLD, OUTPUT_H , OUTPUT_W);
+        int boxSize = _find_valid_score_num( score, SCORE_THREAHOLD, OUTPUT_H , OUTPUT_W);
         std::cout << " Num boxes before " << boxSize <<"\n";
 
-        sort_by_key(score, dev_score_indexs, OUTPUT_W * OUTPUT_H);
+        _sort_by_key(score, dev_score_indexs, OUTPUT_W * OUTPUT_H);
 
         boxSize = boxSize > INPUT_NMS_MAX_SIZE ? INPUT_NMS_MAX_SIZE : boxSize;
         // int boxSizeAft = raw_nms_gpu(reg,  height, dim , rot, dev_score_indexs, 
         //                                                 host_keep_data, boxSize,  NMS_THREAHOLD);
-        int boxSizeAft = rawNmsGpu(reg,  height, dim , rot, dev_score_indexs, 
+        int boxSizeAft = _raw_nms_gpu(reg,  height, dim , rot, dev_score_indexs, 
                                                      host_keep_data, mask_cpu, remv_cpu,  boxSize,  NMS_THREAHOLD);
 
 
@@ -264,7 +264,7 @@ void postprocessGPU(const samplesCommon::BufferManager& buffers,
 
         // GPU_CHECK(cudaMemcpy(host_keep_data, dev_keep_data, boxSizeAft * sizeof(long), cudaMemcpyDeviceToHost));
 
-        gather_all(host_boxes, host_label, 
+        _gather_all(host_boxes, host_label, 
                                reg, height, dim,rot, score, cls, dev_score_indexs, host_keep_data,
                                 boxSize,  boxSizeAft );
                                 

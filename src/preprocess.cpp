@@ -160,15 +160,11 @@ void preprocess(float* points, float* feature, int* indices, int pointNum, int p
 
 
 
-    // for (size_t i=0; i < 100 ; i++) {
-    //     std::cout << i
-    // }
 }
 
 
-// void preprocessGPU(float* points, float* feature, int* indices, int pointNum, int pointDim =5)
 void preprocessGPU(float* dev_points, float* feature,int* indices,
- bool* _PMask, int* _PBEVIdxs, int* _PPointNumAssigned, int* _BEVVoxelIdx, float* _VPointSum, int* _VRange, int* _VPointNum,
+ bool* p_mask, int* p_bev_idx, int* p_point_num_assigned, int* bev_voxel_idx, float* v_point_sum, int* v_range, int* v_point_num,
 int pointNum, int pointDim = 5)
 {
     pointNum = pointNum > MAX_POINTS ? MAX_POINTS : pointNum;
@@ -176,7 +172,7 @@ int pointNum, int pointDim = 5)
     GPU_CHECK(cudaMemset(feature, 0.0, MAX_PILLARS * MAX_PIONT_IN_PILLARS * FEATURE_NUM * sizeof(float)));
 
     _preprocess_gpu( dev_points, feature, indices, 
-    _PMask, _PBEVIdxs,  _PPointNumAssigned,  _BEVVoxelIdx, _VPointSum,  _VRange,  _VPointNum,
+    p_mask, p_bev_idx,  p_point_num_assigned,  bev_voxel_idx, v_point_sum,  v_range,  v_point_num,
      pointNum);
 
 }

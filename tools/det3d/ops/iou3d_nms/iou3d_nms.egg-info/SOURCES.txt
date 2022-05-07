@@ -1,0 +1,9 @@
+setup.py
+iou3d_nms.egg-info/PKG-INFO
+iou3d_nms.egg-info/SOURCES.txt
+iou3d_nms.egg-info/dependency_links.txt
+iou3d_nms.egg-info/top_level.txt
+src/iou3d_cpu.cpp
+src/iou3d_nms.cpp
+src/iou3d_nms_api.cpp
+src/iou3d_nms_kernel.cu
