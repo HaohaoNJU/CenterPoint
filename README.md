@@ -52,6 +52,33 @@ By default this will generate fp16-engine files.
 
 ### Work with int8
 
+There are two ways to make quantization according to [Nvidia](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/#working-with-int8): Explicit  & Implicit Quantization
+
+To make explicit quant, you can go to [TensorRT](https://github.com/NVIDIA/TensorRT)/bin and make 
+`./trtexec --onnx=model.onnx --int8 --saveEngine=model.engine`
+*you will need to compile tensorrt from source code*
+
+To make implicit quant, you need previously generate calibration files, we assume you have waymo_openset downloaded and have converted into the desired data formation according to [this](https://github.com/tianweiy/CenterPoint/blob/master/docs/WAYMO.md)
+
+```
+python3 generate_calib_data.py \
+--config waymo_centerpoint_pp_two_pfn_stride1_3x.py \
+--ckpt your_model.pth \
+--calib_file_path your_calib_files
+```
+
+Then refer to the code we provide by 
+```
+python3 create_engine.py \
+--config waymo_centerpoint_pp_two_pfn_stride1_3x.py \
+--pfe_onnx_path pfe.onnx \
+--rpn_onnx_path rpn.onnx \
+--pfe_engine_path pfe_quant.engine \
+--rpn_engine_path rpn_quant.engine \
+--quant \
+--calib_file_path your_calib_files \
+--calib_batch_size 10
+```
 
 ###  Run inference 
 
