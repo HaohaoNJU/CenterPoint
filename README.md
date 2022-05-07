@@ -15,7 +15,47 @@ It mainly relies on TensorRT and cuda as 3rd-party package,  with the following 
 
 *vCuda : 11.3*
 
-Note that this project does not rely on *PCL* and *Boost* by now. However, they may be used in the future and has been written in CMakeLists.txt.
+This project has provided the baseline onnx models trained with [this config](https://github.com/tianweiy/CenterPoint/blob/master/configs/waymo/pp/waymo_centerpoint_pp_two_pfn_stride1_3x.py) in `models`. If you want to export your own models, we assume you have had [CenterPoint](https://github.com/tianweiy/CenterPoint.git) project installed, you can setup local `det3d` environment 
+
+```
+cd /PATH/TO/centerpoint/tools 
+bash setup3.sh
+```
+
+# Preperation 
+
+###  Export as onnx models
+To export your own models, you can run
+```
+python3 export_onnx.py \
+--config waymo_centerpoint_pp_two_pfn_stride1_3x.py \
+--ckpt your_model.pth \
+--pfe_save_path pfe.onnx \
+--rpn_save_path rpn.onnx
+```
+Here we extract two pure nn models from the whole computation graph---`pfe` and `rpn`, this is to make it easier for trt to optimize its inference engine, 
+and we use cuda to connect these nn engines.
+
+###  Generate TensorRT serialized engines
+Actually you can directly create trt engines from onnx models and skip this step, however a more ideal way is to load your previously saved serialize engine files.
+
+You can run 
+```
+python3 create_engine.py \
+--config waymo_centerpoint_pp_two_pfn_stride1_3x.py \
+--pfe_onnx_path pfe.onnx \
+--rpn_onnx_path rpn.onnx \
+--pfe_engine_path pfe_fp.engine \
+--rpn_engine_path rpn_fp.engine
+```
+By default this will generate fp16-engine files.
+
+### Work with int8
+
+
+###  Run inference 
+
+## 4. Online Tracking and Visualization
 
 After installation, you may then build the project by executing the following commands:
 
