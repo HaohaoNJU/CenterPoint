@@ -104,7 +104,7 @@ def convert2scatter(inputs,indexs):
     dim = inputs.shape[-1]
     rets = torch.zeros((dim,cfg.bev_h,cfg.bev_w),dtype=inputs.dtype).to(inputs.device)
     for i in range(len(indexs)):
-        if indexs[i] <0: continue
+        if indexs[i] <0 or indexs[i] >= cfg.bev_w * cfg.bev_h: continue
         yIdx = indexs[i] // cfg.bev_w
         xIdx = indexs[i] % cfg.bev_h
         rets[:,yIdx,xIdx] = inputs[i]
