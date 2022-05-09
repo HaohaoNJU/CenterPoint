@@ -6,7 +6,7 @@ from os import path as os_path
 from pkgutil import extend_path
 from sys import path as sys_path
 
-__extended_path = '/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/src/vision_opencv/cv_bridge/python'.split(';')
+__extended_path = '/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/src/vision_opencv/cv_bridge/python'.split(';')
 for p in reversed(__extended_path):
     sys_path.insert(0, p)
     del p

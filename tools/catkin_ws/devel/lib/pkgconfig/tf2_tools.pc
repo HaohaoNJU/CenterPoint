@@ -1,4 +1,4 @@
-prefix=/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel
+prefix=/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/devel
 
 Name: tf2_tools
 Description: Description of tf2_tools

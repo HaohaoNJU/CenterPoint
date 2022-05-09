@@ -12,8 +12,8 @@ const _arrayDeserializer = _deserializer.Array;
 const _finder = _ros_msg_utils.Find;
 const _getByteLength = _ros_msg_utils.getByteLength;
 let LookupTransformGoal = require('./LookupTransformGoal.js');
-let std_msgs = _finder('std_msgs');
 let actionlib_msgs = _finder('actionlib_msgs');
+let std_msgs = _finder('std_msgs');
 
 //-----------------------------------------------------------
 

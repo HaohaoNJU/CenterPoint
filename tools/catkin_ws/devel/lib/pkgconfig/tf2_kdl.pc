@@ -1,8 +1,8 @@
-prefix=/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel
+prefix=/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/devel
 
 Name: tf2_kdl
 Description: Description of tf2_kdl
 Version: 0.7.5
-Cflags: -I/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/src/geometry2/tf2_kdl/include -I/usr/local/include/eigen3 -I/opt/ros/melodic/share/orocos_kdl/cmake/../../../include -I/usr/include/eigen3
+Cflags: -I/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/src/geometry2/tf2_kdl/include -I/usr/local/include/eigen3 -I/opt/ros/melodic/share/orocos_kdl/cmake/../../../include -I/usr/include/eigen3
 Libs: -L${prefix}/lib /opt/ros/melodic/lib/liborocos-kdl.so.1.4.0
 Requires: 

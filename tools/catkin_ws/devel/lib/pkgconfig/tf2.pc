@@ -1,8 +1,8 @@
-prefix=/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel
+prefix=/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/devel
 
 Name: tf2
 Description: Description of tf2
 Version: 0.7.5
-Cflags: -I/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/src/geometry2/tf2/include -I/usr/include
+Cflags: -I/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/src/geometry2/tf2/include -I/usr/include
 Libs: -L${prefix}/lib -ltf2 /usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4
 Requires: geometry_msgs tf2_msgs rostime

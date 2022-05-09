@@ -1,8 +1,8 @@
-prefix=/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel
+prefix=/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/devel
 
 Name: eigen_conversions
 Description: Description of eigen_conversions
 Version: 1.13.2
-Cflags: -I/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/src/geometry/eigen_conversions/include -I/usr/local/include/eigen3 -I/opt/ros/melodic/share/orocos_kdl/cmake/../../../include -I/usr/include/eigen3
+Cflags: -I/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/src/geometry/eigen_conversions/include -I/usr/local/include/eigen3 -I/opt/ros/melodic/share/orocos_kdl/cmake/../../../include -I/usr/include/eigen3
 Libs: -L${prefix}/lib -leigen_conversions /opt/ros/melodic/lib/liborocos-kdl.so.1.4.0
 Requires: geometry_msgs std_msgs

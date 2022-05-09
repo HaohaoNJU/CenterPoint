@@ -1,4 +1,4 @@
-prefix=/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel
+prefix=/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/devel
 
 Name: opencv_tests
 Description: Description of opencv_tests

@@ -67,14 +67,14 @@ set(tf_CONFIG_INCLUDED TRUE)
 
 # set variables for source/devel/install prefixes
 if("TRUE" STREQUAL "TRUE")
-  set(tf_SOURCE_PREFIX /home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/src/geometry/tf)
-  set(tf_DEVEL_PREFIX /home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel)
+  set(tf_SOURCE_PREFIX /home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/src/geometry/tf)
+  set(tf_DEVEL_PREFIX /home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/devel)
   set(tf_INSTALL_PREFIX "")
   set(tf_PREFIX ${tf_DEVEL_PREFIX})
 else()
   set(tf_SOURCE_PREFIX "")
   set(tf_DEVEL_PREFIX "")
-  set(tf_INSTALL_PREFIX /home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/install)
+  set(tf_INSTALL_PREFIX /home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/install)
   set(tf_PREFIX ${tf_INSTALL_PREFIX})
 endif()
 
@@ -91,9 +91,9 @@ endif()
 # flag project as catkin-based to distinguish if a find_package()-ed project is a catkin project
 set(tf_FOUND_CATKIN_PROJECT TRUE)
 
-if(NOT "/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel/include;/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/src/geometry/tf/include " STREQUAL " ")
+if(NOT "/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/devel/include;/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/src/geometry/tf/include " STREQUAL " ")
   set(tf_INCLUDE_DIRS "")
-  set(_include_dirs "/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel/include;/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/src/geometry/tf/include")
+  set(_include_dirs "/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/devel/include;/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/src/geometry/tf/include")
   if(NOT " " STREQUAL " ")
     set(_report "Check the issue tracker '' and consider creating a ticket if the problem has not been reported yet.")
   elseif(NOT "http://www.ros.org/wiki/tf " STREQUAL " ")
@@ -110,7 +110,7 @@ if(NOT "/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel/include;/h
         message(FATAL_ERROR "Project 'tf' specifies '${idir}' as an include dir, which is not found.  It does not exist in '${include}'.  ${_report}")
       endif()
     else()
-      message(FATAL_ERROR "Project 'tf' specifies '${idir}' as an include dir, which is not found.  It does neither exist as an absolute directory nor in '/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/src/geometry/tf/${idir}'.  ${_report}")
+      message(FATAL_ERROR "Project 'tf' specifies '${idir}' as an include dir, which is not found.  It does neither exist as an absolute directory nor in '/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/src/geometry/tf/${idir}'.  ${_report}")
     endif()
     _list_append_unique(tf_INCLUDE_DIRS ${include})
   endforeach()
@@ -154,7 +154,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel/lib;/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel/lib;/opt/ros/melodic/lib)
+    foreach(path /home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/devel/lib;/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/devel/lib;/opt/ros/melodic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
