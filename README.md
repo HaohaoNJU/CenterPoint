@@ -136,7 +136,7 @@ You can run `cd tools && python3 waymo_eval.py --cpp_output --save_path ../resul
 |fp16+cpupre+gpupost|0.6024|0.5030|0.0240|0.5545|0.5378|0.0542|
 |fp16+gpupre+gpupost|0.6207|0.5173|0.2327|0.5788|0.5624|0.2984|
 |int8(minmax)+gpupre+gpupost|0.3470|0.2889|0.0|0.3222|0.3065|0.0|
-|int8(entropy)+gpupre+gpupost|0.1263|0.1015|0.0|0.1129|0.106|0.0|
+|int8(entropy)+gpupre+gpupost|0.1396|0.1049|0.0014|0.1550|0.1452|0.0008|
 |int8(explicit)+gpupre+gpupost|0.4642|0.3823|0.0288|0.4248|0.4112|0.0201|
 
 From the above metrics, we can see that 
