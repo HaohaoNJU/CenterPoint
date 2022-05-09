@@ -156,15 +156,11 @@ Then you can open another two terminals, one type in `roscore`, another one type
 
 Detection & tracking result shows below:
 #### float detection & tracking
-
-<img src='doc/fp_det.gif'  style=' width:350px;height:210 px'/>
-<img src='doc/fp_track.gif'  style=' width:350px;height:210 px'/>
+<img src='doc/fp_det.gif' style=' width:400px;height:240 px'/> <img src='doc/fp_track.gif' style=' width:400px;height:240 px'/>  
 
 #### implicit & explicit tracking
 
-<img src='doc/entropy_track.gif' align='left' style=' width:350px;height:210 px'/>;
-<img src='doc/explicit_track.gif' align='right' style=' width:350px;height:210 px'/>
-
+<img src='doc/entropy_track.gif' style=' width:400px;height:240 px'/> <img src='doc/explicit_track.gif' style=' width:400px;height:240 px'/>
 
 
 # What has been done?
