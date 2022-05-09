@@ -153,20 +153,17 @@ source devel/setup.bash
 You need to config your file paths in `tools/catkin_ws/src/waymo_track/src/waymo_track.py`.
 Then you can open another two terminals, one type in `roscore`, another one type in `rviz` to show results(you can directly load `default.rviz` in `catkin_ws`), in your original terminal, go to `catkin_ws`, run `rosrun waymo_track waymo_track.py`, you should see the detection or tracking results in rviz window.
 
+
 Detection & tracking result shows below:
-
-
+#### float detection & tracking
 <img src='doc/fp_det.gif' align='left' style=' width:350px;height:210 px'/>
 <img src='doc/fp_track.gif' align='right' style=' width:350px;height:210 px'/>
+
+#### implicit & explicit tracking
 <img src='doc/entropy_track.gif' align='left' style=' width:350px;height:210 px'/>
 <img src='doc/explicit_track.gif' align='right' style=' width:350px;height:210 px'/>
 
 
-
-![fp_det](doc/fp_det.gif "float det")
-![fp_track](doc/fp_track.gif "float track")
-![implicit_quant_track](doc/entropy_track.gif "implicit quant track")
-![explicit_quant_track](doc/explicit_track.gif "explicit quant track")
 
 
 # What has been done?
