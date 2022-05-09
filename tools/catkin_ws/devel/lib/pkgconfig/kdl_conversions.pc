@@ -1,0 +1,8 @@
+prefix=/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel
+
+Name: kdl_conversions
+Description: Description of kdl_conversions
+Version: 1.13.2
+Cflags: -I/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/src/geometry/kdl_conversions/include -I/opt/ros/melodic/share/orocos_kdl/cmake/../../../include -I/usr/include/eigen3
+Libs: -L${prefix}/lib -lkdl_conversions /opt/ros/melodic/lib/liborocos-kdl.so.1.4.0
+Requires: geometry_msgs

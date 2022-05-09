@@ -1,0 +1,8 @@
+prefix=/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel
+
+Name: tf2_tools
+Description: Description of tf2_tools
+Version: 0.7.5
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: tf2 tf2_msgs tf2_ros

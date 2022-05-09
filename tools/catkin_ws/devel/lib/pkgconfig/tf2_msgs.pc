@@ -1,0 +1,8 @@
+prefix=/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel
+
+Name: tf2_msgs
+Description: Description of tf2_msgs
+Version: 0.7.5
+Cflags: -I/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel/include -I/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/src/geometry2/tf2_msgs/include
+Libs: -L${prefix}/lib 
+Requires: message_generation geometry_msgs actionlib_msgs

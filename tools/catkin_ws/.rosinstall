@@ -1,0 +1,4 @@
+- git:
+    local-name: src/geometry2
+    uri: https://github.com/ros/geometry2
+    version: 0.6.5

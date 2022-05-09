@@ -1,0 +1,8 @@
+prefix=/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel
+
+Name: opencv_tests
+Description: Description of opencv_tests
+Version: 1.12.8
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

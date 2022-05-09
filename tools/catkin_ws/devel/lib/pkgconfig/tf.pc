@@ -1,0 +1,8 @@
+prefix=/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel
+
+Name: tf
+Description: Description of tf
+Version: 1.13.2
+Cflags: -I/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel/include -I/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/src/geometry/tf/include
+Libs: -L${prefix}/lib -ltf
+Requires: geometry_msgs message_filters message_runtime roscpp sensor_msgs std_msgs tf2_ros rosconsole

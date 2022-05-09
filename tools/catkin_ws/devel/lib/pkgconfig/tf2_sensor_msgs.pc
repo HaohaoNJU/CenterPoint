@@ -1,0 +1,8 @@
+prefix=/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel
+
+Name: tf2_sensor_msgs
+Description: Description of tf2_sensor_msgs
+Version: 0.7.5
+Cflags: -I/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/src/geometry2/tf2_sensor_msgs/include -I/usr/local/include/eigen3
+Libs: -L${prefix}/lib 
+Requires: sensor_msgs tf2_ros tf2
