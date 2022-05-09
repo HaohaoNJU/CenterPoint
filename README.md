@@ -154,10 +154,13 @@ You need to config your file paths in `tools/catkin_ws/src/waymo_track/src/waymo
 Then you can open another two terminals, one type in `roscore`, another one type in `rviz` to show results(you can directly load `default.rviz` in `catkin_ws`), in your original terminal, go to `catkin_ws`, run `rosrun waymo_track waymo_track.py`, you should see the detection or tracking results in rviz window.
 
 Detection & tracking result shows below:
-![fp_det](doc/fp_det.gif)
-![fp_track](doc/fp_track.gif)
-![implicit_quant_track](doc/entropy_track.gif)
-![explicit_quant_track](doc/explicit_track.gif)
+
+
+
+![fp_det](doc/fp_det.gif "float det")
+![fp_track](doc/fp_track.gif "float track")
+![implicit_quant_track](doc/entropy_track.gif "implicit quant track")
+![explicit_quant_track](doc/explicit_track.gif "explicit quant track")
 
 
 # What has been done?
@@ -166,6 +169,7 @@ To futher learn the detailed documentation, please refer to the following comput
 
 # Acknowledgements
 This project refers to some codes from:
+
 
 [CenterPoint](https://github.com/tianweiy/CenterPoint)
 
