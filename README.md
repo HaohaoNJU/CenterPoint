@@ -145,10 +145,20 @@ From the above metrics, we can see that
 3. int8 mode can't achieve the same results as float mode, and implicit calibration performs worse than explicit calib, we choose 1000 samples to make calibration and batch size is set 10, maybe samples are insufficient. However explicit calib model runs slower than implicit ones.
 
 # Online Tracking and Visualization
-TODO 
+We use rivz to visualize perception results, to setup catkin workspace, you can go to `tools/catkin_ws`, run
+```
+bash catkin_make.sh
+source devel/setup.bash
+```
+You need to config your file paths in `tools/catkin_ws/src/waymo_track/src/waymo_track.py`.
+Then you can open another two terminals, one type in `roscore`, another one type in `rviz` to show results(you can directly load `default.rviz` in `catkin_ws`), in your original terminal, go to `catkin_ws`, run `rosrun waymo_track waymo_track.py`, you should see the detection or tracking results in rviz window.
 
-Detection result shows below:
-![gif](doc/seq0_fp.gif)
+Detection & tracking result shows below:
+![fp_det](doc/fp_det.gif)
+![fp_track](doc/fp_track.gif)
+![implicit_quant_track](doc/entropy_track.gif)
+![explicit_quant_track](doc/explicit_track.gif)
+
 
 # What has been done?
 To futher learn the detailed documentation, please refer to the following computation graph and [doc file](doc/CenterPointTRT.doc).
