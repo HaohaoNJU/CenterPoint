@@ -164,7 +164,7 @@ Detection & tracking result shows below:
 
 
 # What has been done?
-To futher learn the detailed documentation, please refer to the following computation graph and [doc file](doc/CenterPointTRT.doc).
+To futher learn the detailed computation graph of CenterPoint, please refer to the following picture.
 ![graph](doc/computation_graph.png)
 
 # Acknowledgements
