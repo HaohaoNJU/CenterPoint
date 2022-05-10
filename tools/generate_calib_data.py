@@ -103,7 +103,8 @@ def convert2scatter(inputs,indexs):
 #     assert len(inputs) == len(indexs)
     dim = inputs.shape[-1]
     rets = torch.zeros((dim,cfg.bev_h,cfg.bev_w),dtype=inputs.dtype).to(inputs.device)
-    for i in range(len(indexs)):
+    num_pillars = min(len(indexs), cfg.max_pillars)
+    for i in range(num_pillars):
         if indexs[i] <0 or indexs[i] >= cfg.bev_w * cfg.bev_h: continue
         yIdx = indexs[i] // cfg.bev_w
         xIdx = indexs[i] % cfg.bev_h
