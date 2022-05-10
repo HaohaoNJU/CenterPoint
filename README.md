@@ -158,7 +158,7 @@ Detection & tracking result shows below:
 #### float detection & tracking
 <img src='doc/fp_det.gif' style=' width:400px;height:270 px'/> <img src='doc/fp_track.gif' style=' width:400px;height:270 px'/>  
 
-#### implicit & explicit tracking
+#### implicit quantization & explicit quantization （tracking）
 
 <img src='doc/entropy_track.gif' style=' width:400px;height:270 px'/> <img src='doc/explicit_track.gif' style=' width:400px;height:270 px'/>
 
