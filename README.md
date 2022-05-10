@@ -1,4 +1,4 @@
-# An Lidar Object Detection & Tracking project implemented by TensorRT 
+# CenterPoint : An Lidar Object Detection & Tracking project implemented by TensorRT 
 
 The project implement CenterPoint by TensorRT, where CenterPoint is an 3D object detection model using center points in the bird eye view.
 Code is written according to the [project](https://github.com/tianweiy/CenterPoint.git)
