@@ -1,0 +1,8 @@
+prefix=/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/devel
+
+Name: tf2_ros
+Description: Description of tf2_ros
+Version: 0.7.5
+Cflags: -I/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/src/geometry2/tf2_ros/include
+Libs: -L${prefix}/lib -ltf2_ros
+Requires: actionlib actionlib_msgs geometry_msgs message_filters roscpp rosgraph tf2 tf2_msgs tf2_py
