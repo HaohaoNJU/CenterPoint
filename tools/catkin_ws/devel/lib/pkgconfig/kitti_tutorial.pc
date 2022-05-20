@@ -1,8 +1,0 @@
-prefix=/home/wanghao/Desktop/projects/WaymoVisualize/catkin_ws/devel
-
-Name: kitti_tutorial
-Description: Description of kitti_tutorial
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

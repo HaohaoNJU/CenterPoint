@@ -1,8 +1,0 @@
-prefix=/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/devel
-
-Name: tf_conversions
-Description: Description of tf_conversions
-Version: 1.13.2
-Cflags: -I/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/src/geometry/tf_conversions/include -I/usr/local/include/eigen3 -I/opt/ros/melodic/share/orocos_kdl/cmake/../../../include -I/usr/include/eigen3
-Libs: -L${prefix}/lib -ltf_conversions /opt/ros/melodic/lib/liborocos-kdl.so.1.4.0
-Requires: geometry_msgs kdl_conversions tf

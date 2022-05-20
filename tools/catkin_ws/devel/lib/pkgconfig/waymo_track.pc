@@ -1,8 +1,0 @@
-prefix=/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/devel
-
-Name: waymo_track
-Description: Description of waymo_track
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

@@ -1,8 +1,0 @@
-prefix=/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/devel
-
-Name: tf2_py
-Description: Description of tf2_py
-Version: 0.7.5
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: rospy tf2

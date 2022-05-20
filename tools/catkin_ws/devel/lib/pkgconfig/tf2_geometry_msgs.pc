@@ -1,8 +1,0 @@
-prefix=/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/devel
-
-Name: tf2_geometry_msgs
-Description: Description of tf2_geometry_msgs
-Version: 0.7.5
-Cflags: -I/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/src/geometry2/tf2_geometry_msgs/include -I/opt/ros/melodic/share/orocos_kdl/cmake/../../../include -I/usr/include/eigen3
-Libs: -L${prefix}/lib /opt/ros/melodic/lib/liborocos-kdl.so /opt/ros/melodic/lib/liborocos-kdl.so.1.4.0
-Requires: geometry_msgs tf2_ros tf2

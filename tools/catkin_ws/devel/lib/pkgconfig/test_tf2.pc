@@ -1,8 +1,0 @@
-prefix=/home/wanghao/Desktop/projects/CP_TRT/github/CenterPointTensorRT/tools/catkin_ws/devel
-
-Name: test_tf2
-Description: Description of test_tf2
-Version: 0.7.5
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
