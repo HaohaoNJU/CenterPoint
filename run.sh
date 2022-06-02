@@ -1,9 +1,9 @@
 ./build/centerpoint \
 --pfeOnnxPath=tools/pfe.onnx \
---rpnOnnxPath=tools/rpn.onnx \ 
+--rpnOnnxPath=tools/rpn.onnx \
 --pfeEnginePath=tools/pfe_fp.engine \
 --rpnEnginePath=tools/rpn_fp.engine \
---savePath=results \ 
+--savePath=results \
 --filePath=/mnt/data/waymo_opensets/val/points \
 --loadEngine \
 --fp16
