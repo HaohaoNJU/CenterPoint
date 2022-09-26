@@ -128,7 +128,18 @@ Note that `fp16` or `int8` may be mixed up with `fp32`, we have no control over 
 We can see that fp16 mode runs much faster than fp32 mode, and gpu preprocess runs much faster than that of cpu, because in cuda, we runs in a pointwise-multithread-way, while in cpu, points are preprocessed in a for-loop-manner. 
 
 # Metrics
-You can run `cd tools && python3 waymo_eval.py --cpp_output --save_path ../results ` to compute evaluation metrics, we set score threshould as 0.2, iou threshuold as 0.7, below we can see the evaluation results:
+You can run `cd tools && python3 waymo_eval.py --cpp_output --save_path ../results ` to compute evaluation metrics, we set score threshould as 0.2, 2D iou threshuold as [0.7,0.5] for vehicle and pedestrian, below we can see the evaluation results:
+
+||Vehicle_level2/mAP|Vehichle_level2/mAPH|vehicle_level2 Recall@0.95|Pedestrian_level2/mAP|Pedestrian_level2/mAPH|Pedestrian_level2 Recall@0.95|
+|---|---|---|---|---|---|---|
+|fp32+cpupre+cpupost|0.7814|0.7240|0.3966|0.6837|0.5668|0.3739|
+|fp32+gpupre+gpupost|0.8039|0.7947|0.5731|0.6723|0.5588|0.2310|
+|fp16+gpupre+gpupost|0.8038|0.7945|0.5730|0.6671|0.5541|0.2301|
+|int8+gpupre+gpupost|0.5827|0.5615|0.4061|0.0634|0.0456|0.0|
+
+
+Below is *the old metrics*, it is computed by 3D iou with threshould [0.5,0.5] for vehicle and pedestrian, however the conclusions are the same.
+
 ||Vehicle_level2/mAP|Vehichle_level2/mAPH|vehicle_level2 Recall@0.95|Pedestrian_level2/mAP|Pedestrian_level2/mAPH|Pedestrian_level2 Recall@0.95|
 |---|---|---|---|---|---|---|
 |torchModel|0.6019|0.5027|0.0241|0.5545|0.5377|0.0547|
@@ -138,6 +149,8 @@ You can run `cd tools && python3 waymo_eval.py --cpp_output --save_path ../resul
 |int8(minmax)+gpupre+gpupost|0.3470|0.2889|0.0|0.3222|0.3065|0.0|
 |int8(entropy)+gpupre+gpupost|0.1396|0.1049|0.0014|0.1550|0.1452|0.0008|
 |int8(explicit)+gpupre+gpupost|0.4642|0.3823|0.0288|0.4248|0.4112|0.0201|
+
+
 
 From the above metrics, we can see that 
 1. fp16 model almostly performs as well as fp32 model, despite it runs much faster.
