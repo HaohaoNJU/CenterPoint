@@ -128,7 +128,7 @@ Note that `fp16` or `int8` may be mixed up with `fp32`, we have no control over 
 We can see that fp16 mode runs much faster than fp32 mode, and gpu preprocess runs much faster than that of cpu, because in cuda, we runs in a pointwise-multithread-way, while in cpu, points are preprocessed in a for-loop-manner. 
 
 # Metrics
-You can run `cd tools && python3 waymo_eval.py --cpp_output --save_path ../results ` to compute evaluation metrics, we set score threshould as 0.2, 2D iou threshuold as [0.7,0.5] for vehicle and pedestrian, below we can see the evaluation results:
+You can run `cd tools && python3 waymo_eval.py --cpp_output --save_path ../results ` to compute evaluation metrics, we set score threshould as 0.2, 2D iou threshuold as [0.7,0.5] for vehicle and pedestrian as is shown in [waymo openset](https://waymo.com/open/challenges/2021/real-time-3d-prediction), below we can see the evaluation results:
 
 ||Vehicle_level2/mAP|Vehichle_level2/mAPH|vehicle_level2 Recall@0.95|Pedestrian_level2/mAP|Pedestrian_level2/mAPH|Pedestrian_level2 Recall@0.95|
 |---|---|---|---|---|---|---|
