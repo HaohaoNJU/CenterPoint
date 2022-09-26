@@ -138,7 +138,7 @@ You can run `cd tools && python3 waymo_eval.py --cpp_output --save_path ../resul
 |int8+gpupre+gpupost|0.5827|0.5615|0.4061|0.0634|0.0456|0.0|
 
 
-Below is *the old metrics*, it is computed by 3D iou with threshould [0.5,0.5] for vehicle and pedestrian, however the conclusions are the same.
+Below are *the old metrics*, it is computed by 3D iou with threshould [0.5,0.5] for vehicle and pedestrian, however the conclusions are the same.
 
 ||Vehicle_level2/mAP|Vehichle_level2/mAPH|vehicle_level2 Recall@0.95|Pedestrian_level2/mAP|Pedestrian_level2/mAPH|Pedestrian_level2 Recall@0.95|
 |---|---|---|---|---|---|---|
