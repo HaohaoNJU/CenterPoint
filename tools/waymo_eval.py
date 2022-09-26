@@ -5,6 +5,7 @@ import sys
 from numpy.core.fromnumeric import argsort
 import json
 import os,shutil, sys
+sys.path.append('..')
 import numpy as np
 import torch
 from torch import nn
@@ -30,10 +31,10 @@ from tqdm import tqdm
 import pickle as pkl
 from multiprocessing import Pool
 #For Metics Computation
-import tensorflow as tf
 from google.protobuf import text_format
 from waymo_open_dataset.metrics.python import detection_metrics
 from waymo_open_dataset.protos import metrics_pb2
+import tensorflow as tf
 
 def kitti2waymo(bbox):
     bbox[:,6] = -(bbox[:,6] + np.pi /2 )
@@ -57,7 +58,14 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-CLASSNAME2LABEL = {"VEHICLE" : 0, "PEDESTRIAN" : 1, "CYCLIST":2,"SIGN":3, "UNKNOWN":3}
+
+CLASSNAME2LABEL = {"VEHICLE" : 0, "PEDESTRIAN" : 1, "CYCLIST":2,"SIGN":3, "UNKNOWN":4}
+# LABEL_MAP = {0:1, 1:2, 2:0, 3:3, 4:4}
+LABEL_MAP = {0:1, 1:2, 2:4, 3:0, 4:0}
+
+PRED_LABEL = {"VEHICLE" : 0, "PEDESTRIAN" : 1, "CYCLIST":2 }
+ANNO_LABEL = {'UNKNOWN':0, 'VEHICLE':1, 'PEDESTRIAN':2, 'SIGN':3, 'CYCLIST':4}
+
 BATCH_SIZE = 1
 config_text = None
 class DetectionMetricsEstimatorTest(tf.test.TestCase):
@@ -71,11 +79,11 @@ class DetectionMetricsEstimatorTest(tf.test.TestCase):
         }
         matcher_type: TYPE_HUNGARIAN
         iou_thresholds: 0.5
+        iou_thresholds: 0.7
         iou_thresholds: 0.5
         iou_thresholds: 0.5
         iou_thresholds: 0.5
-        iou_thresholds: 0.5
-        box_type: TYPE_3D
+        box_type: TYPE_2D
         """
         text_format.Merge(config_text, config)
         return config
@@ -166,8 +174,16 @@ def example_to_device(example, device=None, non_blocking=False) -> dict:
 def pkl_read(p):
 	data = pkl.load(open(p,'rb'))
 	return data
+def load_anno_gt(anno_path):
+    all_data = pkl_read(anno_path)
+
+    gt_boxes = np.array([ann['box'] for ann in all_data['objects']]).reshape(-1, 9)
+    gt_classes = np.array([ann['label'] for ann in all_data['objects']])
+    return gt_boxes, gt_classes
+
 def classname2label(data):
-    return np.array([CLASSNAME2LABEL[x] for x in data])
+    # return np.array([CLASSNAME2LABEL[x] for x in data])
+    return np.array([ANNO_LABEL[x] for x in data])
 
 def dict_to_cpu(data):
     for k,v in data.items():
@@ -181,6 +197,7 @@ def save_predictions(worker_id, data_loader,model,gpu_device, args):
             if  idx % args.num_worker != worker_id:
                 continue
             example = example_to_device(data_batch,device=gpu_device, non_blocking=True)
+
             rets = model(example,return_loss=False)
             for i, ret in enumerate(rets):
                 ret = rets[i]
@@ -196,26 +213,45 @@ def run_inference(args):
         pattern = "infos_val_02sweeps_filter_zero_gt.pkl" if  "two_sweep" in args.config else "infos_val_01sweeps_filter_zero_gt.pkl"
         cfg.data.val.info_path= os.path.join(cfg.data.val.root_path, pattern)
         cfg.data.val.ann_file= os.path.join(cfg.data.val.root_path, pattern)
+    else:
+        cfg.data.val.root_path="/mnt/data/waymo_opensets"
+        pattern = "infos_val_02sweeps_filter_zero_gt.pkl" if  "two_sweep" in args.config else "infos_val_01sweeps_filter_zero_gt.pkl"
+        cfg.data.val.info_path= os.path.join(cfg.data.val.root_path, pattern)
+        cfg.data.val.ann_file= os.path.join(cfg.data.val.root_path, pattern)
     model = build_detector(cfg.model, train_cfg=None, test_cfg=cfg.test_cfg)
+
+
     dataset = build_dataset(cfg.data.val)
     data_loader = DataLoader(
-        dataset,batch_size=BATCH_SIZE,sampler=None,shuffle=False,num_workers=2,collate_fn=collate_kitti,pin_memory=True,
+        dataset,batch_size=BATCH_SIZE,sampler=None,shuffle=False,num_workers=0,collate_fn=collate_kitti,pin_memory=False,
     )
     # data_iter = iter(data_loader)
     # data_batch = next(data_iter)
     ckpt_path = cfg.PRETRAINED if args.ckpt is None else args.ckpt
     checkpoint = load_checkpoint(model, ckpt_path,map_location="cpu")
     print("Model has been loaded from %s ."  %  ckpt_path)
-    model.eval()
+
     gpu_device = torch.device("cuda")
-    # (example["voxels"],example["num_points"],example["coordinates"]),\
-    #                             gpu_device, non_blocking=False)
-    model.cuda()
+
     print("Running  Inference . . .")
-    if args.num_worker == 1:
-        save_predictions(0,data_loader,model,gpu_device, args)
-    else:
-        mp.spawn(save_predictions, nprocs = args.num_worker, args = (data_loader, model,gpu_device,  args))
+
+    for m in model.modules():
+        if isinstance(m, torch.nn.BatchNorm2d):
+            if torch.any(torch.isnan(m.running_mean)):
+                m.running_mean.zero_()
+                print("running mean  set to 0 ")
+            if torch.any(torch.isnan(m.running_var)):
+                m.running_var.fill_(1)
+                print("running var set to  1")
+
+    model.eval()
+    model.cuda()
+
+    # if args.num_worker == 1:
+    save_predictions(0,data_loader,model,gpu_device, args)
+
+    # else:
+        # mp.spawn(save_predictions, nprocs = args.num_worker, args = (data_loader, model,gpu_device,  args))
         # pool = Pool(args.num_worker)
         # try:
         #     for worker_id in range(args.num_worker):
@@ -249,6 +285,7 @@ def compute_detection_metrics(args):
                 pred_name = os.path.basename(info['path'])
 
             pred_file = os.path.join(args.save_path,pred_name)
+
             if not os.path.exists(pred_file):
                 continue
             if args.cpp_output:
@@ -266,10 +303,12 @@ def compute_detection_metrics(args):
                 box3d_lidar = kitti2waymo(box3d_lidar)
                 label_preds = data[:,1]
             else:
-                pred_dict = pkl_read(pred_file)
-                scores = pred_dict['scores']
-                box3d_lidar = pred_dict['box3d_lidar'][:,[0,1,2,3,4,5,-1]]
-                label_preds = pred_dict['label_preds']
+                data = pkl_read(pred_file)
+                scores = data['scores']
+                box3d_lidar = data['box3d_lidar'][:,[0,1,2,3,4,5,-1]]
+                label_preds = data['label_preds']
+            # box3d_lidar[:,[3,4]] = box3d_lidar[:,[4,3]]
+            # box3d_lidar[:,-1] = -box3d_lidar[:,-1]
 
             selected_indexs = np.where(scores >= SCORE_THRE)[0]
 
@@ -278,15 +317,19 @@ def compute_detection_metrics(args):
             # print("pred_boxes : \n",scores )
             # print("gt_boxes : \n",classname2label(info['gt_names']) )
             cnt += 1
+
+            ############################################################
+            gt_boxes.append(info['gt_boxes'][:,[0,1,2,3,4,5,8]])
+            gt_classes.append(classname2label(info['gt_names']))
+            gt_frame_ids.append(np.ones(len(info['gt_boxes'])) * idx)
+            
+            # box3d_lidar = kitti2waymo(box3d_lidar)
+            label_preds = np.array([LABEL_MAP[int(i)] for i in label_preds])
+            ############################################################
             pred_boxes.append(box3d_lidar[selected_indexs])
             pred_classes.append(label_preds[selected_indexs])
             pred_scores.append(scores[selected_indexs])
             pred_frame_ids.append(np.ones(len(selected_indexs)) * idx)
-            # omit vel_x and vel_y
-            gt_boxes.append(info['gt_boxes'][:,[0,1,2,3,4,5,8]])
-            gt_classes.append(classname2label(info['gt_names']))
-            gt_frame_ids.append(np.ones(len(info['gt_boxes'])) * idx)
-
             if idx % 50 ==0 or idx == len(val_infos)-1:
                 pred_boxes = np.concatenate(pred_boxes,axis=0)
                 pred_classes = np.concatenate(pred_classes,axis = 0)
@@ -313,6 +356,8 @@ def compute_detection_metrics(args):
 if __name__ == "__main__":
     args = parse_args()
     assert not (args.cpp_output and args.track_output ), "cpp_output confilect with track_output ! "
+    if args.subset:
+        args.info_path = "/mnt/data/waymo_opensets/val_sub0.1/infos_val_01sweeps_filter_zero_gt.pkl"
     os.makedirs(args.save_path,exist_ok=True)
     # global BATCH_SIZE
     BATCH_SIZE = args.batch_size
@@ -320,7 +365,7 @@ if __name__ == "__main__":
     if args.run_infer:
         run_inference(args)
 
-    print("Computing 3D Detection Metrics . . .")
+    print("Computing 2D Detection Metrics . . .")
     compute_detection_metrics(args)
     print("Metrics : \n", config_text)
 
